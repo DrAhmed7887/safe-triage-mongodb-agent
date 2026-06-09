@@ -86,6 +86,36 @@ class MongoDBClient:
             logger.error(f"Failed to query cases: {e}")
             return []
 
+    def save_case(self, record: Dict[str, Any]) -> str:
+        """Alias for insert_case — saves a triage case record and returns its ID."""
+        return self.insert_case(record)
+
+    def get_recent_cases(self, limit: int = 20) -> List[Dict[str, Any]]:
+        """Alias for get_cases — retrieves the most recent triage case records."""
+        return self.get_cases(limit=limit)
+
+    def get_case_by_id(self, case_id: str) -> Optional[Dict[str, Any]]:
+        """Fetches a single triage case document by its MongoDB _id string."""
+        if not self.connect():
+            return None
+        try:
+            from bson import ObjectId
+            oid = ObjectId(case_id)
+        except Exception:
+            logger.warning(f"Invalid ObjectId format: {case_id!r}")
+            return None
+        try:
+            doc = self._collection.find_one({"_id": oid})
+            if doc is None:
+                return None
+            doc["_id"] = str(doc["_id"])
+            if "timestamp" in doc and isinstance(doc["timestamp"], datetime):
+                doc["timestamp"] = doc["timestamp"].isoformat()
+            return doc
+        except Exception as e:
+            logger.error(f"Failed to fetch case by id {case_id!r}: {e}")
+            return None
+
     def seed_cases(self, cases: List[Dict[str, Any]]) -> int:
         """Seeds standard demo cases if collection is empty."""
         if not self.connect():

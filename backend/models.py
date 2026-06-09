@@ -224,6 +224,9 @@ class TriageResult(BaseModel):
     boundary_questions: List[Dict[str, str]] = []
     clarification_token: Optional[str] = None
 
+    # Safety disclaimer (mandatory per mission spec — every TriageResult must carry this)
+    safety_disclaimer: str = "Disclaimer: This is a research prototype only. It is not a certified medical device and has not been cleared for clinical diagnostic use. Clinicians retain final authority over all triage assessments."
+
 
 class TriageConfirmationRequest(BaseModel):
     patient_id: str

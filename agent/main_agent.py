@@ -1,13 +1,16 @@
 import os
 import sys
+import json
 import logging
 from typing import Dict, Any
 
-# Ensure correct import paths
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Ensure repo root is on the path for both standalone and package execution
+_repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
 
-from triage_tool import TriageTool
-from models import PatientInput
+from agent.triage_tool import TriageTool
+from agent.models import PatientInput
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("main_agent")

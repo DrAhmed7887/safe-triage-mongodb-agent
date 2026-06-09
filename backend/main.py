@@ -1,13 +1,13 @@
 import os
 import json
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field
-from models import PatientInput, TriageResult, TriageLevel
-from triage_tool import TriageTool
-from mongodb_client import MongoDBClient
-from mimic_loader import load_demo_cases
+from backend.models import PatientInput, TriageResult, TriageLevel
+from agent.triage_tool import TriageTool
+from backend.mongodb_client import MongoDBClient
+from backend.mimic_loader import load_demo_cases
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -84,7 +84,8 @@ def post_triage(patient: PatientInput):
             "expected_resources": evaluation["expected_resources"],
             "safety_warning": evaluation["safety_warning"],
             "requires_review": evaluation["recommended_esi"] in [1, 2],
-            "disclaimer": "Disclaimer: This is a research prototype only. It is not a certified medical device and has not been cleared for clinical diagnostic use. Clinicians retain final authority over all triage assessments."
+            "disclaimer": "Disclaimer: This is a research prototype only. It is not a certified medical device and has not been cleared for clinical diagnostic use. Clinicians retain final authority over all triage assessments.",
+            "safety_disclaimer": "Disclaimer: This is a research prototype only. It is not a certified medical device and has not been cleared for clinical diagnostic use. Clinicians retain final authority over all triage assessments."
         }
         
         # Save case & result to MongoDB
