@@ -1,0 +1,17 @@
+.env
+.env.local
+.env.*.local
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.DS_Store
+node_modules/
+dist/
+build/
+venv/
+.venv/
+.git/
+safe_triage_source_temp/
+safe_triage_source_temp_ssd/

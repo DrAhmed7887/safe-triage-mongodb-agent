@@ -1,0 +1,29 @@
+steps:
+  # Build and deploy backend (FastAPI + pymongo) to Google Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'safe-triage-mongodb-api'
+      - '--source'
+      - '.'
+      - '--region'
+      - 'us-central1'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+      - '--memory'
+      - '1Gi'
+      - '--timeout'
+      - '300'
+      - '--set-env-vars'
+      - 'GCP_PROJECT_ID=${_GCP_PROJECT_ID},MONGODB_URI=${_MONGODB_URI}'
+
+timeout: '1800s'
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _GCP_PROJECT_ID: 'safe-triage-ai'
+  _MONGODB_URI: 'mongodb+srv://user:pass@cluster.mongodb.net/safe_triage'

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAFE-Triage UI — MongoDB Track</title>
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --card-bg: #151d30;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --border: #1f2937;
+            
+            /* ESI Colors */
+            --esi-1: #ef4444; /* Red */
+            --esi-2: #f97316; /* Orange */
+            --esi-3: #eab308; /* Yellow */
+            --esi-4: #22c55e; /* Green */
+            --esi-5: #3b82f6; /* Blue */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Form styling */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .inline-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            background-color: rgba(255,255,255,0.02);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px dashed var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.6);
+        }
+
+        /* Demo Cases Seeder */
+        .demo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .demo-item {
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .demo-item:hover {
+            border-color: var(--accent);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: white;
+        }
+
+        .badge-1 { background-color: var(--esi-1); }
+        .badge-2 { background-color: var(--esi-2); }
+        .badge-3 { background-color: var(--esi-3); }
+        .badge-4 { background-color: var(--esi-4); }
+        .badge-5 { background-color: var(--esi-5); }
+
+        /* Output Display */
+        .result-container {
+            display: none;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .esi-display {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 3rem;
+            color: white;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .esi-title-sub {
+            font-size: 1rem;
+            font-weight: 500;
+            display: block;
+            margin-top: 0.5rem;
+        }
+
+        .reasoning-box {
+            background-color: var(--bg-dark);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .disclaimer-box {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+            margin-top: 1rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SAFE-Triage Workspace</h1>
+            <p class="subtitle">MongoDB Atlas Integration & Triage Engine Demo Console</p>
+        </header>
+
+        <div class="grid">
+            <!-- Left Side: Triage Input Form -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Patient Registration Form</span>
+                </div>
+                
+                <!-- Demo Loaders -->
+                <div class="form-group">
+                    <label>Select & Load Demo Scenario (MIMIC-IV & Arabic cases)</label>
+                    <div class="demo-list" id="demoList">
+                        <!-- Loaded dynamically via js -->
+                    </div>
+                </div>
+
+                <form id="triageForm">
+                    <div class="inline-group">
+                        <div class="form-group">
+                            <label for="age">Age (years)</label>
+                            <input type="number" id="age" step="0.1" value="45" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">Gender</label>
+                            <select id="gender" required>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="complaint">Chief Complaint (English or Egyptian Arabic)</label>
+                        <textarea id="complaint" rows="3" required placeholder="e.g. Chest pain radiating to left arm / وجع شديد في صدري"></textarea>
+                    </div>
+
+                    <label>Vital Signs</label>
+                    <div class="vitals-grid">
+                        <div class="form-group">
+                            <label for="hr">Heart Rate</label>
+                            <input type="number" id="hr" placeholder="HR">
+                        </div>
+                        <div class="form-group">
+                            <label for="rr">Resp. Rate</label>
+                            <input type="number" id="rr" placeholder="RR">
+                        </div>
+                        <div class="form-group">
+                            <label for="spo2">SpO2 (%)</label>
+                            <input type="number" id="spo2" placeholder="SpO2">
+                        </div>
+                        <div class="form-group">
+                            <label for="temp">Temp (°C)</label>
+                            <input type="number" id="temp" step="0.1" placeholder="Temp">
+                        </div>
+                        <div class="form-group">
+                            <label for="sbp">Systolic BP</label>
+                            <input type="number" id="sbp" placeholder="SBP">
+                        </div>
+                        <div class="form-group">
+                            <label for="gcs">GCS</label>
+                            <input type="number" id="gcs" placeholder="GCS">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn">Perform Triage Classification</button>
+                </form>
+            </div>
+
+            <!-- Right Side: Output Results -->
+            <div class="card">
+                <div class="card-title">Triage Officer Evaluation Outcome</div>
+                
+                <div id="noResult" style="color: var(--text-muted); text-align: center; padding: 4rem 0;">
+                    Submit a patient scenario to evaluate ESI triage outcomes.
+                </div>
+
+                <div class="result-container" id="resultContainer">
+                    <div class="esi-display" id="esiVal">
+                        ESI 3
+                        <span class="esi-title-sub" id="esiLabel">Urgent / عاجل</span>
+                    </div>
+
+                    <div class="reasoning-box">
+                        <h4 style="margin-bottom: 0.5rem; color: var(--accent);">Clinical Reasoning (English)</h4>
+                        <p id="reasoningEn"></p>
+                    </div>
+
+                    <div class="reasoning-box">
+                        <h4 style="margin-bottom: 0.5rem; color: var(--accent);">التعليل الطبي (العربية)</h4>
+                        <p id="reasoningAr" style="direction: rtl; text-align: right;"></p>
+                    </div>
+
+                    <div>
+                        <h4 style="margin-bottom: 0.5rem;">Expected Resources Recommended</h4>
+                        <p id="resourcesList" style="color: var(--text-muted);"></p>
+                    </div>
+
+                    <div class="disclaimer-box">
+                        <strong style="color: var(--esi-1);">CLINICAL WARNING & AUTHORIZATION AUTHORITY:</strong>
+                        <p id="disclaimerText"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Seed Cases List (Demo Data)
+        const demoCases = [
+            {
+                "chief_complaint": "Not responding at all and breathing very weak",
+                "chief_complaint_ar": "مش بيرد عليا خالص والنفس ضعيف جداً",
+                "age": 55, "gender": "male", "expected_level": 1,
+                "vitals": { "hr": 40, "rr": 6, "spo2": 82, "temp": 36.2, "sbp": 70, "gcs": 3 }
+            },
+            {
+                "chief_complaint": "Severe chest pain for 30 min radiating to left arm",
+                "chief_complaint_ar": "صدري بيوجعني جامد من نص ساعة وبينتشر في دراعي الشمال",
+                "age": 58, "gender": "male", "expected_level": 2,
+                "vitals": { "hr": 100, "rr": 22, "spo2": 94, "temp": 36.8, "sbp": 160, "gcs": 15 }
+            },
+            {
+                "chief_complaint": "Abdominal pain since yesterday, right lower side",
+                "chief_complaint_ar": "بطني بتوجعني من امبارح في الجنب الأيمن تحت",
+                "age": 25, "gender": "female", "expected_level": 3,
+                "vitals": { "hr": 95, "rr": 18, "spo2": 98, "temp": 38.2, "sbp": 115, "gcs": 15 }
+            },
+            {
+                "chief_complaint": "My stomach is burning inside of me",
+                "chief_complaint_ar": "بطني بتولع فيا",
+                "age": 34, "gender": "female", "expected_level": 2,
+                "vitals": { "hr": 98, "rr": 18, "spo2": 98, "temp": 37.2, "sbp": 110, "gcs": 15 }
+            }
+        ];
+
+        // Populate Demo List
+        const demoList = document.getElementById('demoList');
+        demoCases.forEach((c, idx) => {
+            const el = document.createElement('div');
+            el.className = 'demo-item';
+            el.innerHTML = `
+                <div>
+                    <strong>${c.chief_complaint}</strong><br>
+                    <span style="color: var(--text-muted); font-size: 0.75rem;">${c.chief_complaint_ar}</span>
+                </div>
+                <span class="badge badge-${c.expected_level}">ESI ${c.expected_level}</span>
+            `;
+            el.onclick = () => loadDemo(c);
+            demoList.appendChild(el);
+        });
+
+        function loadDemo(c) {
+            document.getElementById('age').value = c.age;
+            document.getElementById('gender').value = c.gender;
+            document.getElementById('complaint').value = c.chief_complaint;
+            
+            document.getElementById('hr').value = c.vitals.hr || '';
+            document.getElementById('rr').value = c.vitals.rr || '';
+            document.getElementById('spo2').value = c.vitals.spo2 || '';
+            document.getElementById('temp').value = c.vitals.temp || '';
+            document.getElementById('sbp').value = c.vitals.sbp || '';
+            document.getElementById('gcs').value = c.vitals.gcs || '';
+        }
+
+        // Form Submit
+        document.getElementById('triageForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.textContent = 'Processing Triage Classification...';
+            submitBtn.disabled = true;
+
+            const payload = {
+                age: parseFloat(document.getElementById('age').value),
+                gender: document.getElementById('gender').value,
+                chief_complaint_text: document.getElementById('complaint').value,
+                vitals: {
+                    hr: parseInt(document.getElementById('hr').value) || null,
+                    rr: parseInt(document.getElementById('rr').value) || null,
+                    spo2: parseFloat(document.getElementById('spo2').value) || null,
+                    temp: parseFloat(document.getElementById('temp').value) || null,
+                    sbp: parseInt(document.getElementById('sbp').value) || null,
+                    gcs: parseInt(document.getElementById('gcs').value) || null
+                }
+            };
+
+            try {
+                // Post request to triage API
+                const res = await fetch('/triage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!res.ok) throw new Error('Failed to evaluate patient case');
+                const data = await res.json();
+                
+                // Show Result UI
+                document.getElementById('noResult').style.display = 'none';
+                const container = document.getElementById('resultContainer');
+                container.style.display = 'flex';
+                
+                // ESI Level Coloring
+                const esiVal = document.getElementById('esiVal');
+                esiVal.style.backgroundColor = `var(--esi-${data.esi_level})`;
+                esiVal.innerHTML = `ESI ${data.esi_level} <span class="esi-title-sub" id="esiLabel">${data.label_en} / ${data.label_ar}</span>`;
+                
+                document.getElementById('reasoningEn').textContent = data.reasoning_en;
+                document.getElementById('reasoningAr').textContent = data.reasoning_ar;
+                
+                const resources = data.expected_resources && data.expected_resources.length > 0 
+                    ? data.expected_resources.join(', ') 
+                    : 'No resource tracking indicated for this ESI bracket.';
+                document.getElementById('resourcesList').textContent = resources;
+                document.getElementById('disclaimerText').textContent = data.disclaimer;
+            } catch (err) {
+                alert('Triage Classification Error: ' + err.message);
+            } finally {
+                submitBtn.textContent = 'Perform Triage Classification';
+                submitBtn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
