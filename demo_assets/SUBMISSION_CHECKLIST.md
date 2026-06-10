@@ -7,13 +7,13 @@ This document maps all hackathon rules and track requirements to the **SAFE-Tria
 | Rule / Requirement | Project Implementation | Status | Details / Citations |
 | :--- | :--- | :---: | :--- |
 | **Public Repository** | [https://github.com/DrAhmed7887/safe-triage-mongodb-agent](https://github.com/DrAhmed7887/safe-triage-mongodb-agent) | **PASS** | Public repository with commit history, fully accessible. |
-| **OSI-Approved License** | [LICENSE](file:///Users/ahmedzayed/Downloads/google_cloud_rapid_agent_hackathon/LICENSE) (MIT) | **PASS** | MIT License is present in the root and visible on GitHub. |
+| **OSI-Approved License** | [LICENSE](../LICENSE) (MIT) | **PASS** | MIT License is present in the root and visible on GitHub. |
 | **Live hosted URL** | [Live App](https://safe-triage-mongodb-api-566848331149.us-central1.run.app) | **PASS** | Deployed on Google Cloud Run; loads anonymously and serves both API and UI console. |
-| **Demo Video** | Video link (YouTube/Vimeo) | **PENDING** | *User Action Required:* Record a $\le$3-min video showcasing the console using the [DEMO_SCRIPT.md](file:///Users/ahmedzayed/Downloads/google_cloud_rapid_agent_hackathon/demo_assets/DEMO_SCRIPT.md). |
-| **Required Story Sections** | [DEVPOST_STORY.md](file:///Users/ahmedzayed/Downloads/google_cloud_rapid_agent_hackathon/demo_assets/DEVPOST_STORY.md) | **PASS** | Project description conforms to the exact Devpost prompts (Inspiration, What it does, How we built it, Challenges, Accomplishments, Learnings, Next steps). |
-| **Google Cloud AI Only** | [triage_tool.py](file:///Users/ahmedzayed/Downloads/google_cloud_rapid_agent_hackathon/agent/triage_tool.py) | **PASS** | Uses **Gemini 2.0 Flash via Vertex AI** exclusively. Zero dependency on `google.generativeai`, `GEMINI_API_KEY`, or non-Google AI SDKs. |
-| **Partner MCP Integration** | [mongodb_mcp_client.py](file:///Users/ahmedzayed/Downloads/google_cloud_rapid_agent_hackathon/agent/mongodb_mcp_client.py) | **PASS** | Integrates **MongoDB MCP Server** for triage cases logging and querying via `insert-many`, `find`, and `count` tools. |
-| **Supported Platforms** | [index.html](file:///Users/ahmedzayed/Downloads/google_cloud_rapid_agent_hackathon/frontend/index.html) | **PASS** | Responsive Web App console UI optimized for desktop and mobile browsers. |
+| **Demo Video** | Video link (YouTube/Vimeo) | **PENDING** | *User Action Required:* Record a $\le$3-min video showcasing the console using the [DEMO_SCRIPT.md](./DEMO_SCRIPT.md). |
+| **Required Story Sections** | [DEVPOST_STORY.md](./DEVPOST_STORY.md) | **PASS** | Project description conforms to the exact Devpost prompts (Inspiration, What it does, How we built it, Challenges, Accomplishments, Learnings, Next steps). |
+| **Google Cloud AI Only** | [triage_tool.py](../agent/triage_tool.py) | **PASS** | Uses **Gemini 2.0 Flash via Vertex AI** exclusively. Zero dependency on `google.generativeai`, `GEMINI_API_KEY`, or non-Google AI SDKs. |
+| **Partner MCP Integration** | [mongodb_mcp_client.py](../agent/mongodb_mcp_client.py) | **PASS** | Integrates **MongoDB MCP Server** for triage cases logging and querying via `insert-many`, `find`, and `count` tools. |
+| **Supported Platforms** | [index.html](../frontend/index.html) | **PASS** | Responsive Web App console UI optimized for desktop and mobile browsers. |
 | **Selected Track** | Devpost Form selection | **PASS** | "MongoDB Track" selected in the Devpost submission project draft. |
 | **No Committed Secrets** | Git check & `.env` verification | **PASS** | The Atlas connection URI resides in the Cloud Run configuration and gitignored local `.env`. No secrets are tracked. |
 
@@ -23,7 +23,7 @@ This document maps all hackathon rules and track requirements to the **SAFE-Tria
 
 ### 1. Open Source License
 * **Rule**: Submissions must license Non-Proprietary Aspects and source code under an OSI-approved license that does not limit commercial use.
-* **Verification**: We have selected the **MIT License** (registered in [LICENSE](file:///Users/ahmedzayed/Downloads/google_cloud_rapid_agent_hackathon/LICENSE)). This is an OSI-approved permissive license that permits commercial reuse.
+* **Verification**: We have selected the **MIT License** (registered in [LICENSE](../LICENSE)). This is an OSI-approved permissive license that permits commercial reuse.
 
 ### 2. Live hosted URL
 * **Rule**: Submission must include a live hosted, testable hosted URL.
