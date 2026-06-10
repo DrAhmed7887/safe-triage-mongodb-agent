@@ -1,599 +1,494 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAFE-Triage Agent console — MongoDB Track</title>
-    <!-- Google Fonts for premium typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Arabic:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <title>SAFE-Triage Clinical AI Console</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <!-- Google Fonts: Space Grotesk (headings), Inter (body), JetBrains Mono (labels/vitals/numbers), Noto Sans Arabic (Arabic) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;family=Space+Grotesk:wght@500;600;700&amp;family=Noto+Sans+Arabic:wght@300;400;500;700;800&amp;display=swap" rel="stylesheet"/>
+
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              background: "#0A0E14",
+              primary: "#14F1C8",
+              secondary: "#FFB020",
+              error: "#FF4D4D",
+              "on-surface": "#dbe5e0",
+              "on-surface-variant": "#b9cac3",
+              "surface-container-high": "#232c29",
+              "surface-container-highest": "#2e3733",
+              "surface-container": "#19211e",
+              "surface-container-low": "#151d1a",
+              "surface-container-lowest": "#08100d",
+            },
+            borderRadius: {
+              "2xl": "1rem",
+            },
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+              heading: ["Space Grotesk", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+              arabic: ["Noto Sans Arabic", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
     <style>
         :root {
-            --bg-dark: #070a13;
-            --card-bg: #111827;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.35);
-            --border: #1f2937;
-            --border-hover: #374151;
-            
-            /* ESI Acuity Color Palettes */
-            --esi-1: #ef4444; /* Level 1 Red */
-            --esi-1-glow: rgba(239, 68, 68, 0.2);
-            --esi-2: #f97316; /* Level 2 Orange */
-            --esi-2-glow: rgba(249, 115, 22, 0.2);
-            --esi-3: #eab308; /* Level 3 Yellow */
-            --esi-3-glow: rgba(234, 179, 8, 0.2);
-            --esi-4: #10b981; /* Level 4 Green */
-            --esi-4-glow: rgba(16, 185, 129, 0.2);
-            --esi-5: #3b82f6; /* Level 5 Blue */
-            --esi-5-glow: rgba(59, 130, 246, 0.2);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            /* Legacy support variables */
+            --esi-1: #FF4D4D;
+            --esi-1-glow: rgba(255, 77, 77, 0.35);
+            --esi-2: #FFB020;
+            --esi-2-glow: rgba(255, 176, 32, 0.35);
+            --esi-3: #EAB308;
+            --esi-3-glow: rgba(234, 179, 8, 0.35);
+            --esi-4: #10B981;
+            --esi-4-glow: rgba(16, 185, 129, 0.35);
+            --esi-5: #3B82F6;
+            --esi-5-glow: rgba(59, 130, 246, 0.35);
         }
 
         body {
-            font-family: 'Outfit', 'Noto Sans Arabic', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            line-height: 1.6;
-            padding: 2.5rem 1.5rem;
+            background-color: #0A0E14;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: #dbe5e0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-panel {
+            background: rgba(20, 24, 32, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-        }
-
-        /* RTL support classes */
-        .rtl {
-            direction: rtl;
-            font-family: 'Noto Sans Arabic', 'Outfit', sans-serif;
-        }
-        .rtl .form-group label {
-            text-align: right;
-        }
-
-        /* Top Header Badge & Layout */
-        header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 3rem;
-            text-align: center;
-        }
-
-        .prototype-badge {
-            background-color: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            color: #f87171;
-            padding: 0.4rem 1rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            margin-bottom: 1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        h1 {
-            font-size: 2.75rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
-        }
-
-        p.subtitle {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            max-width: 600px;
-        }
-
-        /* UI Grid Split */
-        .grid {
-            display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            gap: 2rem;
-            align-items: start;
-        }
-
-        @media (max-width: 1024px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 2.25rem;
-            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
-            position: relative;
-            overflow: hidden;
-            transition: border-color 0.3s ease;
-        }
-
-        .card:hover {
-            border-color: var(--border-hover);
-        }
-
-        .card-title {
-            font-size: 1.35rem;
-            font-weight: 700;
-            margin-bottom: 1.75rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.75rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Language Toggle Switcher */
-        .lang-toggle-btn {
-            background-color: var(--bg-dark);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 0.35rem 0.85rem;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .lang-toggle-btn:hover {
-            border-color: var(--accent);
-            background-color: var(--accent-glow);
-        }
-
-        /* Form styling */
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        select,
-        textarea {
-            width: 100%;
-            background-color: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 0.85rem;
-            color: var(--text-main);
-            font-size: 0.95rem;
-            transition: all 0.25s ease;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        .inline-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.25rem;
-        }
-
-        .vitals-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            background-color: rgba(0, 0, 0, 0.25);
-            padding: 1.25rem;
-            border-radius: 12px;
-            border: 1px dashed var(--border);
-            margin-bottom: 1.75rem;
-        }
-
-        .vitals-grid .form-group {
-            margin-bottom: 0;
-        }
-
-        button.btn-primary {
-            width: 100%;
-            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 1.1rem;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
-            transition: all 0.25s ease;
-        }
-
-        button.btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px -5px rgba(59, 130, 246, 0.6);
-        }
-
-        /* Live Canned Scenarios Bar */
-        .demo-bar {
-            background-color: rgba(255,255,255,0.02);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .demo-buttons-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 0.75rem;
-            margin-top: 0.75rem;
-        }
-
-        .demo-btn {
-            background-color: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.6rem 0.85rem;
-            color: var(--text-main);
-            font-size: 0.8rem;
-            font-weight: 500;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .demo-btn:hover {
-            border-color: var(--accent);
-            background-color: var(--accent-glow);
-        }
-
-        .demo-btn .badge {
-            margin-left: 0.5rem;
-        }
-
-        /* ESI Badge indicators */
-        .badge {
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            font-weight: 800;
-            font-size: 0.75rem;
-            color: white;
-        }
-
-        .badge-1 { background-color: var(--esi-1); }
-        .badge-2 { background-color: var(--esi-2); }
-        .badge-3 { background-color: var(--esi-3); }
-        .badge-4 { background-color: var(--esi-4); }
-        .badge-5 { background-color: var(--esi-5); }
-
-        /* Output Outcome Panel */
-        .result-container {
-            display: none;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .esi-display {
-            text-align: center;
-            padding: 2.5rem;
-            border-radius: 14px;
-            font-weight: 800;
-            font-size: 3.5rem;
-            color: white;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.35);
-            position: relative;
+        .glass-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
         }
 
-        .esi-title-sub {
-            font-size: 1.15rem;
-            font-weight: 600;
-            display: block;
-            margin-top: 0.75rem;
-            opacity: 0.95;
-            letter-spacing: 0.02em;
+        .glass-input:focus {
+            outline: none;
+            border-color: #14F1C8;
+            box-shadow: 0 0 15px rgba(20, 241, 200, 0.2);
         }
 
-        .reasoning-box {
-            background-color: var(--bg-dark);
-            border-left: 4px solid var(--accent);
-            padding: 1.25rem;
-            border-radius: 4px 12px 12px 4px;
+        .pulse-glow {
+            animation: pulse 2s infinite;
         }
 
-        .warning-box {
-            background-color: rgba(239, 68, 68, 0.08);
-            border: 1px dashed rgba(239, 68, 68, 0.35);
-            padding: 1rem;
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(20, 241, 200, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(20, 241, 200, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(20, 241, 200, 0); }
+        }
+
+        /* RTL support classes */
+        [dir="rtl"] {
+            font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+            text-align: right;
+        }
+        [dir="rtl"] input, [dir="rtl"] textarea, [dir="rtl"] select {
+            text-align: right;
+        }
+
+        /* Custom Scrollbar for list */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            color: #fca5a5;
-            font-size: 0.88rem;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        .disclaimer-box {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border);
-            padding-top: 1.25rem;
-            margin-top: 1.25rem;
-            line-height: 1.5;
+        /* ESI Glow rings */
+        .esi-ring-1 {
+            border-color: #FF4D4D !important;
+            box-shadow: 0 0 35px rgba(255, 77, 77, 0.45), inset 0 0 20px rgba(255, 77, 77, 0.25) !important;
         }
-
-        /* Persistence Details & Recent Cases */
-        .recent-cases-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-top: 2rem;
+        .esi-ring-2 {
+            border-color: #FFB020 !important;
+            box-shadow: 0 0 35px rgba(255, 176, 32, 0.45), inset 0 0 20px rgba(255, 176, 32, 0.25) !important;
         }
-
-        .recent-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            margin-top: 1rem;
+        .esi-ring-3 {
+            border-color: #EAB308 !important;
+            box-shadow: 0 0 35px rgba(234, 179, 8, 0.45), inset 0 0 20px rgba(234, 179, 8, 0.25) !important;
         }
-
-        .recent-item {
-            background-color: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 0.85rem 1.1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.88rem;
+        .esi-ring-4 {
+            border-color: #10B981 !important;
+            box-shadow: 0 0 35px rgba(16, 185, 129, 0.45), inset 0 0 20px rgba(16, 185, 129, 0.25) !important;
         }
-
-        .recent-item-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .footer-status {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid var(--border);
-            margin-top: 2.5rem;
-            padding-top: 1.25rem;
-            font-size: 0.82rem;
-            color: var(--text-muted);
-        }
-
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            background-color: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #34d399;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-weight: 600;
-        }
-        .status-pill.fallback {
-            background-color: rgba(249, 115, 22, 0.15);
-            border: 1px solid rgba(249, 115, 22, 0.3);
-            color: #fb923c;
+        .esi-ring-5 {
+            border-color: #3B82F6 !important;
+            box-shadow: 0 0 35px rgba(59, 130, 246, 0.45), inset 0 0 20px rgba(59, 130, 246, 0.25) !important;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <div class="prototype-badge">
+<body class="min-h-screen flex flex-col antialiased bg-background">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-background/65 backdrop-blur-xl border-b border-white/10 flex justify-between items-center w-full px-8 h-20 z-50 sticky top-0">
+        <div class="flex items-center gap-4">
+            <!-- Inline SVG medical cross + pulse wave logo -->
+            <svg class="h-10 w-10 text-primary filter drop-shadow-[0_0_8px_#14F1C8]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 10.5H16.5V5C16.5 4.44772 16.0523 4 15.5 4H8.5C7.94772 4 7.5 4.44772 7.5 5V10.5H5C4.44772 10.5 4 10.9477 4 11.5V12.5C4 13.0523 4.44772 13.5 5 13.5H7.5V19C7.5 19.5523 7.94772 20 8.5 20H15.5C16.0523 20 16.5 19.5523 16.5 19V13.5H19C19.5523 13.5 20 13.0523 20 12.5V11.5C20 10.9477 19.5523 10.5 19 10.5Z" fill="#14F1C8" fill-opacity="0.15" stroke="#14F1C8" stroke-width="1.5"/>
+                <path d="M3 12H7L9 7.5L12 16.5L14 9.5L16 13.5L17.5 12H21" stroke="#14F1C8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div>
+                <h1 class="font-heading text-xl font-bold tracking-tight text-white">SAFE-Triage</h1>
+                <p class="font-mono text-[10px] text-on-surface-variant uppercase tracking-widest">Clinical AI Console</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-6">
+            <!-- Research Pill -->
+            <div class="hidden lg:flex items-center gap-2 bg-[#FF4D4D]/10 border border-[#FF4D4D]/30 text-[#FF4D4D] px-3.5 py-1.5 rounded-full text-xs font-heading font-semibold tracking-wide">
                 <span>⚠️ Clinical Research Prototype — Not a Medical Device</span>
             </div>
-            <h1>SAFE-Triage Agent Dashboard</h1>
-            <p class="subtitle">Google Cloud Agent Builder + MongoDB Atlas MCP Track Console</p>
-        </header>
 
+            <!-- Health Status Indicators -->
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 bg-black/40 border border-white/5 px-3.5 py-1.5 rounded-full">
+                    <div id="mcpIndicator" class="w-2 h-2 rounded-full bg-error shadow-[0_0_8px_#FF4D4D]"></div>
+                    <span id="mcpPill" class="font-mono text-[11px] text-on-surface-variant">MCP: Offline (pymongo)</span>
+                </div>
+                <div class="flex items-center gap-2 bg-black/40 border border-white/5 px-3.5 py-1.5 rounded-full">
+                    <div id="dbIndicator" class="w-2 h-2 rounded-full bg-error shadow-[0_0_8px_#FF4D4D]"></div>
+                    <span id="dbPill" class="font-mono text-[11px] text-on-surface-variant">pymongo: Disconnected</span>
+                </div>
+            </div>
+
+            <!-- EN/ع Translation toggle -->
+            <button id="langBtn" class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-mono text-xs tracking-wider" onclick="toggleRTL()">
+                <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">language</span>
+                EN / ع
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-grow p-6 container mx-auto max-w-[1600px]">
+        
         <!-- Canned Demo Scenarios Seeder -->
-        <div class="demo-bar">
-            <label style="font-size: 0.8rem; margin-bottom: 0.5rem; display: block;">Instant Triage Demo Scenarios</label>
-            <div class="demo-buttons-grid">
-                <button class="demo-btn" onclick="seedDemo(0)">
+        <div class="glass-panel rounded-2xl p-4 mb-6 border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-2 font-mono text-xs text-on-surface-variant tracking-wider uppercase">
+                <span class="material-symbols-outlined text-primary text-base">science</span>
+                <span>Instant Triage Demo Scenarios / سيناريوهات تجريبية فورية</span>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <button type="button" class="bg-black/30 border border-white/10 hover:border-error/50 hover:bg-[#FF4D4D]/10 rounded-lg px-3 py-1.5 text-xs text-on-surface transition-all duration-200 flex items-center gap-2" onclick="seedDemo(0)">
                     <span>1. Seizure (GCS 6)</span>
-                    <span class="badge badge-1">ESI 1</span>
+                    <span class="bg-[#FF4D4D]/20 text-[#FF4D4D] border border-[#FF4D4D]/30 px-1.5 py-0.5 rounded text-[10px] font-bold">ESI 1</span>
                 </button>
-                <button class="demo-btn" onclick="seedDemo(1)">
+                <button type="button" class="bg-black/30 border border-white/10 hover:border-warning/50 hover:bg-[#FFB020]/10 rounded-lg px-3 py-1.5 text-xs text-on-surface transition-all duration-200 flex items-center gap-2" onclick="seedDemo(1)">
                     <span>2. Chest Pain (ACS)</span>
-                    <span class="badge badge-2">ESI 2</span>
+                    <span class="bg-[#FFB020]/20 text-[#FFB020] border border-[#FFB020]/30 px-1.5 py-0.5 rounded text-[10px] font-bold">ESI 2</span>
                 </button>
-                <button class="demo-btn" onclick="seedDemo(2)">
-                    <span>3. بطني بتولع فيا</span>
-                    <span class="badge badge-2">ESI 2</span>
+                <button type="button" class="bg-black/30 border border-white/10 hover:border-warning/50 hover:bg-[#FFB020]/10 rounded-lg px-3 py-1.5 text-xs text-on-surface transition-all duration-200 flex items-center gap-2" onclick="seedDemo(2)">
+                    <span dir="rtl">3. بطني بتولع فيا</span>
+                    <span class="bg-[#FFB020]/20 text-[#FFB020] border border-[#FFB020]/30 px-1.5 py-0.5 rounded text-[10px] font-bold">ESI 2</span>
                 </button>
-                <button class="demo-btn" onclick="seedDemo(3)">
+                <button type="button" class="bg-black/30 border border-white/10 hover:border-blue-500/50 hover:bg-[#3B82F6]/10 rounded-lg px-3 py-1.5 text-xs text-on-surface transition-all duration-200 flex items-center gap-2" onclick="seedDemo(3)">
                     <span>4. BP Refill</span>
-                    <span class="badge badge-5">ESI 5</span>
+                    <span class="bg-[#3B82F6]/20 text-[#3B82F6] border border-[#3B82F6]/30 px-1.5 py-0.5 rounded text-[10px] font-bold">ESI 5</span>
                 </button>
-                <button class="demo-btn" onclick="triggerSeedRefresh()">
+                <button type="button" class="bg-primary/10 border border-primary/30 hover:bg-primary/20 hover:border-primary rounded-lg px-3 py-1.5 text-xs text-primary font-bold transition-all duration-200 flex items-center gap-2" onclick="triggerSeedRefresh()">
                     <span>5. Save to MongoDB</span>
-                    <span style="color: var(--accent); font-weight: 700;">TEST 💾</span>
+                    <span>TEST 💾</span>
                 </button>
             </div>
         </div>
 
-        <div class="grid" id="mainGrid">
-            <!-- Left Side: Triage Input Form -->
-            <div class="card">
-                <div class="card-title">
-                    <span>Clinical Case Ingestion</span>
-                    <button class="lang-toggle-btn" onclick="toggleRTL()" id="langBtn">
-                        🌐 Toggle RTL (العربية)
-                    </button>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full" id="mainGrid">
+            
+            <!-- LEFT COLUMN: Patient Intake -->
+            <section class="lg:col-span-4 flex flex-col gap-6">
+                <div class="glass-panel rounded-2xl p-6 h-full flex flex-col">
+                    <h2 class="font-heading text-lg font-bold text-white mb-6 border-b border-white/10 pb-4 flex justify-between">
+                        <span>Patient Intake</span>
+                        <span class="text-on-surface-variant font-arabic text-sm" dir="rtl">إدخال المريض</span>
+                    </h2>
+
+                    <form id="triageForm" class="space-y-6 flex-grow flex flex-col justify-between">
+                        <div class="space-y-5">
+                            <!-- Demographics Grid -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="relative">
+                                    <input id="age" class="w-full glass-input rounded-lg px-3 py-2 text-body-md text-on-surface pr-16" type="number" step="0.1" value="45" required/>
+                                    <span class="absolute right-3 top-2.5 text-xs text-on-surface-variant font-mono">Age (yrs)</span>
+                                </div>
+                                <div class="relative">
+                                    <select id="gender" class="w-full glass-input rounded-lg px-3 py-2 text-body-md text-on-surface pr-16 appearance-none cursor-pointer" required>
+                                        <option value="male" style="background-color: #0A0E14;">Male / ذكر</option>
+                                        <option value="female" style="background-color: #0A0E14;">Female / أنثى</option>
+                                    </select>
+                                    <span class="absolute right-3 top-2.5 text-xs text-on-surface-variant font-mono pointer-events-none">Gender</span>
+                                </div>
+                            </div>
+
+                            <!-- Chief Complaint -->
+                            <div>
+                                <label class="flex justify-between font-mono text-xs text-on-surface-variant mb-2 tracking-wider">
+                                    <span>CHIEF COMPLAINT</span>
+                                    <span class="font-arabic" dir="rtl">الشكوى الرئيسية</span>
+                                </label>
+                                <textarea id="complaint" class="w-full glass-input rounded-lg p-4 text-body-md text-on-surface min-h-[100px] resize-none" placeholder="Describe symptoms... / ...وصف الأعراض" required></textarea>
+                            </div>
+
+                            <!-- Vitals Grid -->
+                            <div>
+                                <label class="block font-mono text-xs text-on-surface-variant mb-3 tracking-wider uppercase">VITAL SIGNS / العلامات الحيوية</label>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="relative">
+                                        <input id="hr" class="w-full glass-input rounded-lg px-3 py-2 text-body-md text-on-surface pr-16" placeholder="--" type="number"/>
+                                        <span class="absolute right-3 top-2.5 text-xs text-on-surface-variant font-mono">HR</span>
+                                    </div>
+                                    <div class="relative">
+                                        <input id="rr" class="w-full glass-input rounded-lg px-3 py-2 text-body-md text-on-surface pr-16" placeholder="--" type="number"/>
+                                        <span class="absolute right-3 top-2.5 text-xs text-on-surface-variant font-mono">RR</span>
+                                    </div>
+                                    <div class="relative">
+                                        <input id="spo2" class="w-full glass-input rounded-lg px-3 py-2 text-body-md text-on-surface pr-16" placeholder="--" type="number" step="0.1"/>
+                                        <span class="absolute right-3 top-2.5 text-xs text-on-surface-variant font-mono">SpO₂%</span>
+                                    </div>
+                                    <div class="relative">
+                                        <input id="temp" class="w-full glass-input rounded-lg px-3 py-2 text-body-md text-on-surface pr-16" placeholder="--" type="number" step="0.1"/>
+                                        <span class="absolute right-3 top-2.5 text-xs text-on-surface-variant font-mono">Temp °C</span>
+                                    </div>
+                                    <div class="relative col-span-2">
+                                        <input id="sbp" class="w-full glass-input rounded-lg px-3 py-2 text-body-md text-on-surface pr-24" placeholder="--" type="number"/>
+                                        <span class="absolute right-3 top-2.5 text-xs text-on-surface-variant font-mono">BP (Sys mmHg)</span>
+                                    </div>
+                                    <div class="relative col-span-2">
+                                        <input id="gcs" class="w-full glass-input rounded-lg px-3 py-2 text-body-md text-on-surface pr-16" placeholder="--" type="number" min="3" max="15"/>
+                                        <span class="absolute right-3 top-2.5 text-xs text-on-surface-variant font-mono">GCS (3-15)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pain Score Slider -->
+                            <div>
+                                <label class="flex justify-between font-mono text-xs text-on-surface-variant mb-2 tracking-wider">
+                                    <span>PAIN SCORE</span>
+                                    <span class="font-arabic" dir="rtl">مقياس الألم</span>
+                                </label>
+                                <input id="painScore" class="w-full accent-primary h-2 bg-surface-container-high rounded-lg appearance-none cursor-pointer" max="10" min="0" type="range" value="0" oninput="document.getElementById('painVal').innerText = this.value"/>
+                                <div class="flex justify-between text-xs text-on-surface-variant mt-1 font-mono">
+                                    <span>0</span>
+                                    <span id="painVal" class="text-primary font-bold">0</span>
+                                    <span>10</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Run Triage Submit Button -->
+                        <button type="submit" id="submitBtn" class="w-full bg-primary text-[#00382c] font-heading font-bold text-md py-4 rounded-xl hover:bg-[#35fed4] transition-all duration-200 flex justify-center items-center gap-3 shadow-[0_4px_20px_-2px_rgba(20,241,200,0.4)] mt-6">
+                            <span class="material-symbols-outlined">bolt</span>
+                            <span>Run Triage Evaluation</span>
+                            <span class="text-sm font-arabic font-normal border-l border-[#00382c]/30 pl-3" dir="rtl">بدء الفرز</span>
+                        </button>
+                    </form>
                 </div>
+            </section>
 
-                <form id="triageForm">
-                    <div class="inline-group">
-                        <div class="form-group">
-                            <label for="age">Patient Age (years)</label>
-                            <input type="number" id="age" step="0.1" value="45" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="gender">Gender</label>
-                            <select id="gender" required>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="complaint">Chief Complaint / الشكوى الرئيسية</label>
-                        <textarea id="complaint" rows="3" required placeholder="e.g. Chest pain radiating to left arm / وجع شديد في صدري"></textarea>
-                    </div>
-
-                    <label>Vital Signs</label>
-                    <div class="vitals-grid">
-                        <div class="form-group">
-                            <label for="hr">Heart Rate</label>
-                            <input type="number" id="hr" placeholder="HR">
-                        </div>
-                        <div class="form-group">
-                            <label for="rr">Resp. Rate</label>
-                            <input type="number" id="rr" placeholder="RR">
-                        </div>
-                        <div class="form-group">
-                            <label for="spo2">SpO2 (%)</label>
-                            <input type="number" id="spo2" placeholder="SpO2">
-                        </div>
-                        <div class="form-group">
-                            <label for="temp">Temp (°C)</label>
-                            <input type="number" id="temp" step="0.1" placeholder="Temp">
-                        </div>
-                        <div class="form-group">
-                            <label for="sbp">Systolic BP</label>
-                            <input type="number" id="sbp" placeholder="SBP">
-                        </div>
-                        <div class="form-group">
-                            <label for="gcs">GCS</label>
-                            <input type="number" id="gcs" placeholder="GCS">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-primary" id="submitBtn">Perform Triage Classification</button>
-                </form>
-            </div>
-
-            <!-- Right Side: Output Results -->
-            <div>
-                <div class="card">
-                    <div class="card-title">Triage Officer Evaluation Outcome</div>
+            <!-- CENTER COLUMN: Triage Result -->
+            <section class="lg:col-span-4 flex flex-col gap-6">
+                <div class="glass-panel rounded-2xl p-6 h-full flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute inset-0 bg-secondary-container/5 blur-[100px] rounded-full pointer-events-none"></div>
                     
-                    <div id="noResult" style="color: var(--text-muted); text-align: center; padding: 4rem 0;">
-                        Submit a patient case to run the ESI hybrid clinical decision engine.
+                    <h2 class="font-heading text-lg font-bold text-white border-b border-white/10 pb-4 flex justify-between z-10">
+                        <span>Triage Result</span>
+                        <span class="text-on-surface-variant font-arabic text-sm" dir="rtl">نتيجة الفرز</span>
+                    </h2>
+
+                    <!-- Empty State Placeholder -->
+                    <div id="noResult" class="flex flex-col items-center justify-center py-20 text-center z-10 flex-grow">
+                        <span class="material-symbols-outlined text-on-surface-variant text-5xl mb-4 opacity-50">clinical_notes</span>
+                        <p class="text-sm text-on-surface-variant font-heading max-w-[280px]">
+                            Awaiting case ingestion. Submit case on the left to process ESI decision logic.
+                        </p>
                     </div>
 
-                    <div class="result-container" id="resultContainer">
-                        <div class="esi-display" id="esiVal">
-                            ESI 3
-                            <span class="esi-title-sub" id="esiLabel">Urgent / عاجل</span>
+                    <!-- Live Result Container (hidden by default) -->
+                    <div id="resultContainer" class="hidden flex-col items-center justify-center z-10 w-full flex-grow pt-6 pb-2">
+                        <!-- Massive Glowing ESI Ring -->
+                        <div id="esiRing" class="w-48 h-48 rounded-full border-4 border-secondary/30 flex items-center justify-center bg-surface-container-lowest/50 backdrop-blur-sm mb-8 relative transition-all duration-300">
+                            <span id="esiNum" class="font-heading text-7xl font-bold text-secondary" style="line-height: 1;">3</span>
+                            <div class="absolute -bottom-4 bg-secondary text-[#291800] px-4 py-1 rounded-full font-mono text-[10px] tracking-wider uppercase font-semibold">
+                                ESI Level
+                            </div>
                         </div>
 
-                        <div class="reasoning-box">
-                            <h4 style="margin-bottom: 0.5rem; color: var(--accent); font-size: 0.88rem; text-transform: uppercase;">Clinical Reasoning (English)</h4>
-                            <p id="reasoningEn" style="font-size: 0.95rem;"></p>
+                        <!-- Labels -->
+                        <div class="flex flex-col items-center gap-1.5 mb-8 text-center">
+                            <h3 id="esiLabelEn" class="font-heading text-2xl font-bold text-secondary tracking-wide">Urgent</h3>
+                            <h4 id="esiLabelAr" class="font-arabic text-lg text-secondary/80 font-medium" dir="rtl">عاجل</h4>
                         </div>
 
-                        <div class="reasoning-box">
-                            <h4 style="margin-bottom: 0.5rem; color: var(--accent); font-size: 0.88rem; text-transform: uppercase;">التعليل الطبي (العربية)</h4>
-                            <p id="reasoningAr" style="font-size: 1rem; direction: rtl; text-align: right;"></p>
+                        <!-- 1-5 ESI Pips -->
+                        <div id="esiPipsBar" class="flex justify-between w-full max-w-[280px] mb-8 bg-black/40 p-2 rounded-full border border-white/5 font-mono">
+                            <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/10 flex items-center justify-center text-xs opacity-40 transition-all duration-300" data-pip="1">1</div>
+                            <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/10 flex items-center justify-center text-xs opacity-40 transition-all duration-300" data-pip="2">2</div>
+                            <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/10 flex items-center justify-center text-xs opacity-40 transition-all duration-300" data-pip="3">3</div>
+                            <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/10 flex items-center justify-center text-xs opacity-40 transition-all duration-300" data-pip="4">4</div>
+                            <div class="w-8 h-8 rounded-full bg-surface-container-highest border border-white/10 flex items-center justify-center text-xs opacity-40 transition-all duration-300" data-pip="5">5</div>
                         </div>
 
-                        <div class="warning-box" id="warningBox" style="display: none;">
-                            <strong>⚠️ Safety Floor / Red Flag Warning:</strong>
-                            <p id="warningText" style="margin-top: 0.25rem;"></p>
+                        <!-- Resources Tag -->
+                        <div class="glass-panel px-5 py-3.5 rounded-xl border border-primary/20 flex items-center gap-4 w-full justify-between mt-auto">
+                            <div class="flex items-center gap-2 font-mono text-xs">
+                                <span class="material-symbols-outlined text-primary text-lg">local_hospital</span>
+                                <span class="text-on-surface">Estimated Resources:</span>
+                                <span id="resourcesList" class="text-primary font-bold">2+</span>
+                            </div>
+                            <span class="text-on-surface-variant font-arabic text-[11px]" dir="rtl">الموارد المقدرة</span>
                         </div>
+                    </div>
+                </div>
+            </section>
 
+            <!-- RIGHT COLUMN: AI Reasoning & History -->
+            <section class="lg:col-span-4 flex flex-col gap-6">
+                <!-- Reasoning Card -->
+                <div class="glass-panel rounded-2xl p-6 flex flex-col gap-5 justify-between min-h-[460px]">
+                    <h4 class="font-heading text-md font-bold text-white border-b border-white/10 pb-3 flex justify-between">
+                        <span>Clinical AI Reasoning</span>
+                        <span class="text-on-surface-variant font-arabic text-sm" dir="rtl">المنطق الطبي للذكاء الاصطناعي</span>
+                    </h4>
+
+                    <!-- Placeholder -->
+                    <div id="noReasoning" class="flex flex-col items-center justify-center py-20 text-center flex-grow">
+                        <span class="material-symbols-outlined text-on-surface-variant text-4xl mb-3 opacity-40">psychology</span>
+                        <p class="text-xs text-on-surface-variant font-heading max-w-[260px]">
+                            AI clinical logic, safety warnings, and extracted symptoms will display here.
+                        </p>
+                    </div>
+
+                    <!-- Live Reasoning Content -->
+                    <div id="reasoningContainer" class="hidden flex-col gap-5 flex-grow">
+                        <!-- Extracted Symptoms -->
                         <div>
-                            <h4 style="margin-bottom: 0.35rem; font-size: 0.88rem; text-transform: uppercase; color: var(--text-muted);">Expected Resources</h4>
-                            <p id="resourcesList" style="font-weight: 600;"></p>
+                            <h4 class="font-mono text-[10px] text-on-surface-variant mb-2 tracking-wider flex justify-between uppercase">
+                                <span>EXTRACTED SYMPTOMS</span>
+                                <span class="font-arabic" dir="rtl">الأعراض المستخرجة</span>
+                            </h4>
+                            <div id="symptomsList" class="flex flex-wrap gap-2">
+                                <!-- Dynamic Symptom Chips -->
+                            </div>
                         </div>
 
-                        <div class="disclaimer-box">
-                            <strong style="color: var(--esi-1); text-transform: uppercase; font-size: 0.78rem;">Clinician Authority Override Disclaimer:</strong>
-                            <p id="disclaimerText" style="margin-top: 0.25rem;"></p>
+                        <!-- AI Logic / Reasoning -->
+                        <div class="bg-black/30 rounded-xl p-4 border border-white/5 flex-grow overflow-y-auto max-h-[220px]">
+                            <h4 class="font-mono text-[10px] text-primary mb-3 flex justify-between items-center tracking-wider uppercase">
+                                <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">memory</span> AI LOGIC</span>
+                                <span class="font-arabic" dir="rtl">منطق الذكاء الاصطناعي</span>
+                            </h4>
+                            <div class="space-y-3">
+                                <p id="reasoningEn" class="text-sm text-on-surface leading-relaxed"></p>
+                                <p id="reasoningAr" class="text-sm text-on-surface-variant border-t border-white/5 pt-2 mt-2 leading-relaxed" dir="rtl"></p>
+                            </div>
+                        </div>
+
+                        <!-- Safety Warning -->
+                        <div id="warningBox" class="hidden bg-error/10 border border-error/30 rounded-xl p-4 flex items-start gap-3">
+                            <span class="material-symbols-outlined text-error mt-0.5">warning</span>
+                            <div class="flex-grow">
+                                <h5 class="text-xs font-bold text-error mb-1 tracking-wider uppercase flex justify-between w-full">
+                                    <span>SAFETY WARNING</span>
+                                    <span class="font-arabic" dir="rtl">تحذير سلامة</span>
+                                </h5>
+                                <p id="warningText" class="text-xs text-red-200 leading-normal"></p>
+                            </div>
+                        </div>
+
+                        <!-- Disclaimer Box -->
+                        <div class="border-t border-white/5 pt-3">
+                            <h5 class="text-[9px] font-mono text-error uppercase tracking-wider mb-1 font-bold">Clinician Authority Override Disclaimer</h5>
+                            <p id="disclaimerText" class="text-[10px] text-on-surface-variant leading-relaxed"></p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Recent Cases (Proves Live Database Writes) -->
-                <div class="recent-cases-card">
-                    <h4 style="font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between;">
-                        <span>Recent Triage History Logs</span>
-                        <span style="color: var(--accent); cursor: pointer;" onclick="fetchRecentCases()">🔄 Refresh</span>
+                <div class="glass-panel rounded-2xl p-6 flex flex-col h-[340px]">
+                    <h4 class="font-heading text-sm font-bold text-white mb-4 flex justify-between pb-2 border-b border-white/10 items-center">
+                        <span class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-base">history</span>
+                            <span>RECENT CASES / الحالات الأخيرة</span>
+                        </span>
+                        <span class="text-xs text-primary cursor-pointer font-mono tracking-wider hover:underline" onclick="fetchRecentCases()">🔄 Refresh</span>
                     </h4>
-                    <div class="recent-list" id="recentList">
-                        <div style="color: var(--text-muted); font-size: 0.82rem; text-align: center; padding: 1rem;">No cases logged in this session yet.</div>
+                    <div class="overflow-y-auto space-y-3 flex-grow pr-1" id="recentList">
+                        <div class="text-on-surface-variant text-xs text-center py-12">No cases logged in database.</div>
                     </div>
                 </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black/60 border-t border-white/5 py-4 mt-auto">
+        <div class="container mx-auto px-8 flex flex-col md:flex-row justify-between items-center text-[10px] text-on-surface-variant font-mono tracking-widest gap-2">
+            <p>© 2026 SAFE-TRIAGE CLINICAL PROTOCOL. FOR DECISION SUPPORT ONLY - NOT A MEDICAL DEVICE.</p>
+            <div class="flex gap-6">
+                <a class="hover:text-primary transition-colors" href="#">Medical Disclaimer</a>
+                <a class="hover:text-primary transition-colors" href="#">Privacy Protocol</a>
+                <a class="hover:text-primary transition-colors" href="#">Data Ethics</a>
             </div>
         </div>
+    </footer>
 
-        <!-- Connection and Status Footnote -->
-        <div class="footer-status">
-            <span>Server Health Protocol: REST API Endpoint Active</span>
-            <div style="display: flex; gap: 0.75rem;">
-                <span id="mcpPill" class="status-pill fallback">MCP: Offline (pymongo)</span>
-                <span id="dbPill" class="status-pill fallback">pymongo: Disconnected</span>
-            </div>
-        </div>
-    </div>
-
+    <!-- Scripting Logic -->
     <script>
+        // Auto-detect backend API host for local/dev fallback, keeping production relative
+        const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.protocol === "file:";
+        const apiBase = isLocal ? "http://localhost:8080" : "";
+
         // Formulated demo scenarios corresponding to hackathon specs
         const demoScenarios = [
             {
                 "chief_complaint": "Having seizures and we can't stop them",
                 "age": 28, "gender": "female",
-                "vitals": { "hr": 130, "rr": 24, "spo2": 95, "temp": 37.1, "sbp": 120, "gcs": 6 }
+                "vitals": { "hr": 130, "rr": 24, "spo2": 95, "temp": 37.1, "sbp": 120, "gcs": 6, "pain_score": 8 }
             },
             {
                 "chief_complaint": "Severe chest pain radiating to left arm",
                 "age": 58, "gender": "male",
-                "vitals": { "hr": 100, "rr": 22, "spo2": 94, "temp": 36.8, "sbp": 160, "gcs": 15 }
+                "vitals": { "hr": 100, "rr": 22, "spo2": 94, "temp": 36.8, "sbp": 160, "gcs": 15, "pain_score": 9 }
             },
             {
                 "chief_complaint": "مغص شديد وبطني بتولع فيا من الصبح",
                 "age": 34, "gender": "female",
-                "vitals": { "hr": 98, "rr": 18, "spo2": 98, "temp": 37.2, "sbp": 110, "gcs": 15 }
+                "vitals": { "hr": 98, "rr": 18, "spo2": 98, "temp": 37.2, "sbp": 110, "gcs": 15, "pain_score": 7 }
             },
             {
                 "chief_complaint": "Need to refill my blood pressure prescription",
                 "age": 60, "gender": "male",
-                "vitals": { "hr": 72, "rr": 14, "spo2": 99, "temp": 36.5, "sbp": 135, "gcs": 15 }
+                "vitals": { "hr": 72, "rr": 14, "spo2": 99, "temp": 36.5, "sbp": 135, "gcs": 15, "pain_score": 0 }
             }
         ];
 
@@ -610,26 +505,34 @@
             document.getElementById('sbp').value = sc.vitals.sbp;
             document.getElementById('gcs').value = sc.vitals.gcs;
 
+            const painVal = sc.vitals.pain_score || 0;
+            document.getElementById('painScore').value = painVal;
+            document.getElementById('painVal').innerText = painVal;
+
             // Automatically toggle RTL if complaint contains Arabic characters
             const hasArabic = /[\u0600-\u06FF]/.test(sc.chief_complaint);
             setRTL(hasArabic);
         }
 
         function setRTL(isRtl) {
-            const mainGrid = document.getElementById('mainGrid');
             const langBtn = document.getElementById('langBtn');
             if (isRtl) {
-                mainGrid.classList.add('rtl');
-                langBtn.textContent = "🌐 Toggle LTR (English)";
+                document.documentElement.dir = 'rtl';
+                langBtn.innerHTML = `
+                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">language</span>
+                    ع / EN
+                `;
             } else {
-                mainGrid.classList.remove('rtl');
-                langBtn.textContent = "🌐 Toggle RTL (العربية)";
+                document.documentElement.dir = 'ltr';
+                langBtn.innerHTML = `
+                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 0;">language</span>
+                    EN / ع
+                `;
             }
         }
 
         function toggleRTL() {
-            const mainGrid = document.getElementById('mainGrid');
-            const isRtl = mainGrid.classList.contains('rtl');
+            const isRtl = document.documentElement.dir === 'rtl';
             setRTL(!isRtl);
         }
 
@@ -642,25 +545,27 @@
         // Fetch connectivity status
         async function updateStatusPills() {
             try {
-                const res = await fetch('/health');
+                const res = await fetch(`${apiBase}/health`);
                 const data = await res.json();
                 
+                const mcpIndicator = document.getElementById('mcpIndicator');
                 const mcpPill = document.getElementById('mcpPill');
+                const dbIndicator = document.getElementById('dbIndicator');
                 const dbPill = document.getElementById('dbPill');
                 
                 if (data.mongodb_mcp_server && data.mongodb_mcp_server.status === "connected") {
-                    mcpPill.className = "status-pill";
+                    mcpIndicator.className = "w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#14F1C8] pulse-glow";
                     mcpPill.textContent = `MCP: Connected (documents: ${data.mongodb_mcp_server.count})`;
                 } else {
-                    mcpPill.className = "status-pill fallback";
+                    mcpIndicator.className = "w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_#FFB020]";
                     mcpPill.textContent = "MCP: Offline (pymongo fallback)";
                 }
 
                 if (data.mongodb_pymongo === "connected") {
-                    dbPill.className = "status-pill";
+                    dbIndicator.className = "w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#14F1C8] pulse-glow";
                     dbPill.textContent = "pymongo: Connected";
                 } else {
-                    dbPill.className = "status-pill fallback";
+                    dbIndicator.className = "w-2 h-2 rounded-full bg-error shadow-[0_0_8px_#FF4D4D]";
                     dbPill.textContent = "pymongo: Disconnected";
                 }
             } catch(e) {
@@ -671,28 +576,51 @@
         // Fetch recent cases from database
         async function fetchRecentCases() {
             try {
-                const res = await fetch('/cases?limit=5');
+                const res = await fetch(`${apiBase}/cases?limit=5`);
                 const data = await res.json();
                 const list = document.getElementById('recentList');
                 list.innerHTML = '';
 
                 if (!data.cases || data.cases.length === 0) {
-                    list.innerHTML = '<div style="color: var(--text-muted); font-size: 0.82rem; text-align: center; padding: 1rem;">No cases logged in database.</div>';
+                    list.innerHTML = '<div class="text-on-surface-variant text-xs text-center py-12">No cases logged in database.</div>';
                     return;
                 }
 
+                const colors = {
+                    1: "#FF4D4D",
+                    2: "#FFB020",
+                    3: "#EAB308",
+                    4: "#10B981",
+                    5: "#3B82F6"
+                };
+
+                const bgColors = {
+                    1: "bg-[#FF4D4D]/20 text-[#FF4D4D] border-[#FF4D4D]/30",
+                    2: "bg-[#FFB020]/20 text-[#FFB020] border-[#FFB020]/30",
+                    3: "bg-[#EAB308]/20 text-[#EAB308] border-[#EAB308]/30",
+                    4: "bg-[#10B981]/20 text-[#10B981] border-[#10B981]/30",
+                    5: "bg-[#3B82F6]/20 text-[#3B82F6] border-[#3B82F6]/30"
+                };
+
                 data.cases.forEach(c => {
                     const el = document.createElement('div');
-                    el.className = 'recent-item';
+                    el.className = 'flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer border border-transparent hover:border-white/10';
                     const ESI = c.triage_result.esi_level || c.triage_result.level;
                     const complaint = c.patient.chief_complaint_text;
-                    const persistence = c.persistence === "mongodb_mcp_server" ? "💾 MCP" : "📴 PyMongo";
+                    const persistence = c.persistence === "mongodb_mcp_server" ? "💾 MCP" : "📴 Fallback";
+                    
+                    const pipColor = colors[ESI] || "#888888";
+                    const badgeClass = bgColors[ESI] || "bg-white/10 text-white border-white/20";
+
                     el.innerHTML = `
-                        <div class="recent-item-info">
-                            <strong>${complaint.length > 35 ? complaint.substring(0, 35) + '...' : complaint}</strong>
-                            <span style="font-size: 0.75rem; color: var(--text-muted);">Age ${c.patient.age} | ${c.patient.gender} | ${persistence}</span>
+                        <div class="flex items-center gap-3">
+                            <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${pipColor}; box-shadow: 0 0 8px ${pipColor};"></div>
+                            <div>
+                                <p class="text-sm font-medium text-white">${complaint.length > 30 ? complaint.substring(0, 30) + '...' : complaint}</p>
+                                <p class="text-[10px] text-on-surface-variant font-mono mt-0.5">Age ${c.patient.age} | ${c.patient.gender} | ${persistence}</p>
+                            </div>
                         </div>
-                        <span class="badge badge-${ESI}">ESI ${ESI}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeClass} font-mono">ESI ${ESI}</span>
                     `;
                     list.appendChild(el);
                 });
@@ -701,11 +629,66 @@
             }
         }
 
+        // Helper to extract basic symptom tags dynamically
+        function extractSymptomTags(text) {
+            const symptoms = [
+                { nameEn: "Chest Pain", nameAr: "ألم في الصدر", keywords: ["chest pain", "صدر", "وجع في صدري", "قلب"] },
+                { nameEn: "Shortness of Breath", nameAr: "ضيق تنفس", keywords: ["breath", "shortness of breath", "تنفس", "مخنوق"] },
+                { nameEn: "Seizure", nameAr: "تشنج", keywords: ["seizure", "convulsion", "تشنج", "صرع"] },
+                { nameEn: "Abdominal Pain", nameAr: "ألم البطن", keywords: ["abdomen", "abdominal", "بطن", "مغص"] },
+                { nameEn: "Fever", nameAr: "حمى", keywords: ["fever", "temp", "حرارة", "سخونة"] },
+                { nameEn: "Headache", nameAr: "صداع", keywords: ["headache", "صداع", "ألم رأس"] },
+                { nameEn: "Trauma / Fall", nameAr: "إصابة / سقوط", keywords: ["fall", "injury", "accident", "خبطة", "وقعت", "كسر"] },
+                { nameEn: "Allergic Reaction", nameAr: "حساسية", keywords: ["allergy", "allergic", "حساسية", "هرش"] }
+            ];
+            
+            const tags = [];
+            const lowerText = text.toLowerCase();
+            symptoms.forEach(s => {
+                if (s.keywords.some(kw => lowerText.includes(kw))) {
+                    tags.push(s);
+                }
+            });
+            
+            // If no specific match, default to a general chip using the first few words of the chief complaint
+            if (tags.length === 0) {
+                const words = text.split(/\s+/).slice(0, 3).join(' ');
+                if (words) {
+                    tags.push({ nameEn: words, nameAr: words });
+                }
+            }
+            return tags;
+        }
+
+        function updateESIPips(esiLevel) {
+            const colors = {
+                1: "bg-[#FF4D4D] border-[#FF4D4D] text-white shadow-[0_0_12px_#FF4D4D] font-bold opacity-100",
+                2: "bg-[#FFB020] border-[#FFB020] text-[#291800] shadow-[0_0_12px_#FFB020] font-bold opacity-100",
+                3: "bg-[#EAB308] border-[#EAB308] text-[#442b00] shadow-[0_0_12px_#EAB308] font-bold opacity-100",
+                4: "bg-[#10B981] border-[#10B981] text-[#00382c] shadow-[0_0_12px_#10B981] font-bold opacity-100",
+                5: "bg-[#3B82F6] border-[#3B82F6] text-white shadow-[0_0_12px_#3B82F6] font-bold opacity-100"
+            };
+
+            const pips = document.querySelectorAll("#esiPipsBar [data-pip]");
+            pips.forEach(pip => {
+                const num = parseInt(pip.getAttribute("data-pip"));
+                if (num === esiLevel) {
+                    pip.className = `w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all duration-300 ${colors[esiLevel]}`;
+                } else {
+                    pip.className = `w-8 h-8 rounded-full bg-surface-container-highest border border-white/10 flex items-center justify-center text-xs opacity-40 transition-all duration-300`;
+                }
+            });
+        }
+
         // Form Submit
         document.getElementById('triageForm').onsubmit = async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
-            submitBtn.textContent = 'Processing Triage Classification...';
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.innerHTML = `
+                <span class="material-symbols-outlined animate-spin">sync</span>
+                <span>Processing Case...</span>
+            `;
             submitBtn.disabled = true;
 
             const payload = {
@@ -718,12 +701,13 @@
                     spo2: parseFloat(document.getElementById('spo2').value) || null,
                     temp: parseFloat(document.getElementById('temp').value) || null,
                     sbp: parseInt(document.getElementById('sbp').value) || null,
-                    gcs: parseInt(document.getElementById('gcs').value) || null
+                    gcs: parseInt(document.getElementById('gcs').value) || null,
+                    pain_score: parseInt(document.getElementById('painScore').value) || 0
                 }
             };
 
             try {
-                const res = await fetch('/triage', {
+                const res = await fetch(`${apiBase}/triage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -732,29 +716,70 @@
                 if (!res.ok) throw new Error('Failed to evaluate patient case');
                 const data = await res.json();
                 
-                // Show Result UI
+                // Hide placeholders, show main results container
                 document.getElementById('noResult').style.display = 'none';
-                const container = document.getElementById('resultContainer');
-                container.style.display = 'flex';
+                document.getElementById('resultContainer').style.display = 'flex';
+                document.getElementById('noReasoning').style.display = 'none';
+                document.getElementById('reasoningContainer').style.display = 'flex';
                 
-                // ESI Level Coloring
-                const esiVal = document.getElementById('esiVal');
-                esiVal.style.backgroundColor = `var(--esi-${data.esi_level})`;
-                esiVal.style.boxShadow = `0 10px 30px ${getGlowColor(data.esi_level)}`;
-                esiVal.innerHTML = `ESI ${data.esi_level} <span class="esi-title-sub" id="esiLabel">${data.label_en} / ${data.label_ar}</span>`;
+                // ESI Level Coloring & Glow
+                const esiLevel = data.esi_level;
+                const esiRing = document.getElementById('esiRing');
+                const esiNum = document.getElementById('esiNum');
+                const esiLabelEn = document.getElementById('esiLabelEn');
+                const esiLabelAr = document.getElementById('esiLabelAr');
+
+                // Clear previous classes
+                esiRing.className = "w-48 h-48 rounded-full border-4 flex items-center justify-center bg-surface-container-lowest/50 backdrop-blur-sm mb-8 relative transition-all duration-300";
+                esiRing.classList.add(`esi-ring-${esiLevel}`);
                 
+                const textColorClass = {
+                    1: "text-[#FF4D4D]",
+                    2: "text-[#FFB020]",
+                    3: "text-[#EAB308]",
+                    4: "text-[#10B981]",
+                    5: "text-[#3B82F6]"
+                }[esiLevel] || "text-white";
+                
+                esiNum.className = `font-heading text-7xl font-bold ${textColorClass}`;
+                esiNum.innerText = esiLevel;
+
+                esiLabelEn.className = `font-heading text-2xl font-bold ${textColorClass} tracking-wide`;
+                esiLabelEn.innerText = data.label_en;
+                esiLabelAr.className = `font-arabic text-lg ${textColorClass}/80 font-medium`;
+                esiLabelAr.innerText = data.label_ar;
+
+                // Update ESI pips
+                updateESIPips(esiLevel);
+                
+                // Symptoms
+                const symptomsList = document.getElementById('symptomsList');
+                symptomsList.innerHTML = '';
+                const tags = extractSymptomTags(payload.chief_complaint_text);
+                tags.forEach(tag => {
+                    const chip = document.createElement('span');
+                    chip.className = 'bg-surface-container-high border border-white/10 px-3 py-1.5 rounded-md text-xs text-on-surface font-sans flex items-center gap-1';
+                    chip.innerHTML = `
+                        <span>${tag.nameEn}</span>
+                        <span class="text-[10px] text-on-surface-variant font-arabic" dir="rtl">${tag.nameAr}</span>
+                    `;
+                    symptomsList.appendChild(chip);
+                });
+
+                // Reasoning
                 document.getElementById('reasoningEn').textContent = data.reasoning_en;
                 document.getElementById('reasoningAr').textContent = data.reasoning_ar;
                 
                 // Handle safety warnings
                 const warningBox = document.getElementById('warningBox');
                 if (data.safety_warning) {
-                    warningBox.style.display = 'block';
+                    warningBox.style.display = 'flex';
                     document.getElementById('warningText').textContent = data.safety_warning;
                 } else {
                     warningBox.style.display = 'none';
                 }
 
+                // Expected Resources
                 const resources = data.expected_resources && data.expected_resources.length > 0 
                     ? data.expected_resources.join(', ') 
                     : 'No resource tracking indicated for this ESI bracket.';
@@ -767,20 +792,10 @@
             } catch (err) {
                 alert('Triage Classification Error: ' + err.message);
             } finally {
-                submitBtn.textContent = 'Perform Triage Classification';
+                submitBtn.innerHTML = originalContent;
                 submitBtn.disabled = false;
             }
         };
-
-        function getGlowColor(level) {
-            return {
-                1: 'var(--esi-1-glow)',
-                2: 'var(--esi-2-glow)',
-                3: 'var(--esi-3-glow)',
-                4: 'var(--esi-4-glow)',
-                5: 'var(--esi-5-glow)'
-            }[level] || 'rgba(0,0,0,0)';
-        }
 
         // Init loads
         updateStatusPills();

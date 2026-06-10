@@ -1,6 +1,8 @@
 import os
 import json
 import logging
+from dotenv import load_dotenv
+load_dotenv()
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, Field
@@ -13,11 +15,22 @@ from agent.mongodb_mcp_client import MongoDBMCPClient, MongoDBMCPError
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
     title="SAFE-Triage Agent API — MongoDB Track",
     description="Emergency department triage system integrated with Google Cloud Agent Builder and MongoDB Atlas",
     version="1.0.0"
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Initialize Tooling and Connections
 triage_tool = TriageTool()
