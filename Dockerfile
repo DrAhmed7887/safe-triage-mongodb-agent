@@ -20,6 +20,7 @@ COPY agent/ ./agent/
 COPY backend/ ./backend/
 COPY data/ ./data/
 COPY scripts/ ./scripts/
+COPY frontend/ ./frontend/
 
 # Expose FastAPI port
 EXPOSE 8080

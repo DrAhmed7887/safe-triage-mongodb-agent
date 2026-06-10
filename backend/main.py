@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, status
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from backend.models import PatientInput, TriageResult, TriageLevel
 from agent.triage_tool import TriageTool
@@ -30,6 +31,22 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve the clinical console UI at the root URL. It's a single self-contained
+# HTML file, so one route is enough (no StaticFiles mount — that would shadow
+# the API routes below). Frontend uses relative paths in prod, so /triage,
+# /cases, /health resolve to this same origin.
+_FRONTEND_INDEX = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "index.html"
+)
+
+
+@app.get("/", include_in_schema=False)
+def serve_console():
+    """Serve the SAFE-Triage clinical console UI."""
+    if os.path.exists(_FRONTEND_INDEX):
+        return FileResponse(_FRONTEND_INDEX)
+    raise HTTPException(status_code=404, detail="Console UI not found")
 
 
 # Initialize Tooling and Connections
