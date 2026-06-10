@@ -15,3 +15,4 @@ venv/
 .git/
 safe_triage_source_temp/
 safe_triage_source_temp_ssd/
+scratch/

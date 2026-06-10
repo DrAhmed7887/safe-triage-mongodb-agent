@@ -27,6 +27,7 @@ import os
 import shutil
 import threading
 from typing import Any
+import anyio
 
 logger = logging.getLogger(__name__)
 
@@ -61,18 +62,34 @@ async def _call_mcp_tool(
     tool_args: dict[str, Any],
 ) -> Any:
     """Open a fresh MCP session, call one tool, return the parsed result."""
-    async with stdio_client(server_params) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            result = await session.call_tool(tool_name, arguments=tool_args)
-            # result.content is a list of TextContent / ImageContent blocks
-            if not result.content:
-                return None
-            text = result.content[0].text if hasattr(result.content[0], "text") else str(result.content[0])
-            try:
-                return json.loads(text)
-            except (json.JSONDecodeError, TypeError):
-                return text
+    result_val = None
+    try:
+        async with stdio_client(server_params) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                result = await session.call_tool(tool_name, arguments=tool_args)
+                # result.content is a list of TextContent / ImageContent blocks
+                if result.content:
+                    text = result.content[0].text if hasattr(result.content[0], "text") else str(result.content[0])
+                    try:
+                        result_val = json.loads(text)
+                    except (json.JSONDecodeError, TypeError):
+                        result_val = text
+    except Exception as exc:
+        is_harmless = False
+        if isinstance(exc, BaseExceptionGroup):
+            match, rest = exc.split(anyio.BrokenResourceError)
+            if match is not None:
+                if rest is None:
+                    is_harmless = True
+                else:
+                    is_harmless = True
+        
+        if is_harmless and result_val is not None:
+            logger.debug("Ignored BrokenResourceError ExceptionGroup in MCP stdio client exit since we have a result.")
+        else:
+            raise
+    return result_val
 
 
 # ── singleton background event loop ──────────────────────────────────────────
@@ -183,6 +200,19 @@ class MongoDBMCPClient:
         Insert a triage case record via MCP insert-many.
         Returns the inserted document ID string.
         """
+        import secrets
+        
+        # Determine or pre-generate the case_id
+        if "_id" in record:
+            val = record["_id"]
+            if isinstance(val, dict) and "$oid" in val:
+                case_id = val["$oid"]
+            else:
+                case_id = str(val)
+        else:
+            case_id = secrets.token_hex(12)
+            record["_id"] = {"$oid": case_id}
+
         result = self._call(
             self._TOOL_INSERT,
             {
@@ -191,11 +221,13 @@ class MongoDBMCPClient:
                 "documents": [record],
             },
         )
-        # result shape: {"database":..., "collection":..., "insertedCount":1,
-        #                "insertedIds": ["<hex-id>"]}
+        # Handle different response shapes from different MCP server versions
         if isinstance(result, dict) and "insertedIds" in result:
             ids = result["insertedIds"]
             return ids[0] if ids else ""
+        elif isinstance(result, str) and "inserted successfully" in result:
+            return case_id
+            
         logger.warning("MongoDBMCPClient.save_case: unexpected result shape: %r", result)
         return ""
 
