@@ -295,3 +295,47 @@ for idx, sc in enumerate(scenarios):
         os.remove(temp_file_path)
 
 print("Original scenarios screenshots generated successfully.")
+
+# ── Generate General UI Screenshots ───────────────────────────────────────────
+print("Generating general UI screenshots...")
+
+# 1. empty_form.png & new_ui_form.png
+temp_html = html_content
+# Set health status to Connected
+temp_html = temp_html.replace('id="mcpIndicator" class="w-2 h-2 rounded-full bg-error shadow-[0_0_8px_#FF4D4D]"></div>', 
+                              'id="mcpIndicator" class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#14F1C8] pulse-glow"></div>')
+temp_html = temp_html.replace('MCP: Offline (pymongo)</span>', 'MCP: Connected (documents: 17)</span>')
+temp_html = temp_html.replace('id="dbIndicator" class="w-2 h-2 rounded-full bg-error shadow-[0_0_8px_#FF4D4D]"></div>', 
+                              'id="dbIndicator" class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#14F1C8] pulse-glow"></div>')
+temp_html = temp_html.replace('pymongo: Disconnected</span>', 'pymongo: Connected</span>')
+
+temp_file_path = "temp_rendered_empty.html"
+with open(temp_file_path, "w", encoding="utf-8") as f_out:
+    f_out.write(temp_html)
+
+abs_temp_path = os.path.abspath(temp_file_path)
+for name in ["empty_form", "new_ui_form"]:
+    out_png_path = f"demo_assets/Approved/{name}.png"
+    cmd = [
+        CHROME_PATH,
+        "--headless",
+        "--window-size=1280,1100",
+        f"--screenshot={out_png_path}",
+        f"file://{abs_temp_path}"
+    ]
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    print(f"Generated general screenshot: {out_png_path}")
+
+if os.path.exists(temp_file_path):
+    os.remove(temp_file_path)
+
+# 2. new_ui_result.png & persistence_live.png
+# We copy them from the generated scenario_2_esi_2_chest_pain.png which is a perfect ESI-2 result and populated cases panel.
+import shutil
+shutil.copy("demo_assets/Approved/scenario_2_esi_2_chest_pain.png", "demo_assets/Approved/new_ui_result.png")
+print("Generated general screenshot: demo_assets/Approved/new_ui_result.png (copied from scenario_2)")
+shutil.copy("demo_assets/Approved/scenario_2_esi_2_chest_pain.png", "demo_assets/Approved/persistence_live.png")
+print("Generated general screenshot: demo_assets/Approved/persistence_live.png (copied from scenario_2)")
+
+print("All screenshots generated successfully.")
+

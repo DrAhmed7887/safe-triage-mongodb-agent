@@ -1,5 +1,8 @@
 # SAFE-Triage Agent — Devpost Hackathon Story
 
+**Live Demo URL:** [https://safe-triage-mongodb-api-566848331149.us-central1.run.app](https://safe-triage-mongodb-api-566848331149.us-central1.run.app)  
+**GitHub Repository:** [https://github.com/DrAhmed7887/safe-triage-mongodb-agent](https://github.com/DrAhmed7887/safe-triage-mongodb-agent)
+
 ## 🩺 Inspiration
 In emergency departments, triage is the thin line between life and death. The Emergency Severity Index (ESI) is the standard 5-level protocol used to prioritize patients. While Large Language Models (LLMs) excel at processing complex unstructured complaints in native dialects, using raw AI for clinical classification introduces unacceptable risks of hallucination, omission, and under-triage. 
 
@@ -23,10 +26,10 @@ The system features an active status dashboard and logs every triage record to a
 * **Graceful Fallbacks**: Created a multi-tier database fallback system. If the MCP Server stdio connection drops or is unconfigured, the system automatically routes queries through a native **pymongo** driver, and further down to an in-memory/mock handler if database access is fully offline.
 * **Backend & Frontend**: Implemented using **FastAPI** in Python and a responsive, high-fidelity dark-mode clinical dashboard in HTML/JS.
 
-## ⚠️ Challenges & Guardrails
+## ⚠️ Challenges we ran into
 A key challenge was compiling complex dependencies in standard cloud builder steps while ensuring the solution runs with zero compilation errors on newer Python installations. Another challenge was ensuring that the AI can never override a deterministic rule. To address this, we implemented the pipeline rule: **AI Extracts, Rules Decide, Humans Confirm**. The AI outputs features and structured descriptions, but the final ESI assignment is calculated deterministically via local Python rule sets.
 
-## 🏆 Accomplishments
+## 🏆 Accomplishments that we're proud of
 * **0% Critical Under-Triage**: Verified through our safety test suite running clinical cases; no critical patient (ESI 1 or 2) was ever downgraded.
 * **Bilingual Arabic Dialect Handling**: Robust handling of Arabic symptoms and automatic RTL interface alignment.
 * **Production-Grade MCP Integration**: Demonstrating a functional use case for the Model Context Protocol in clinical automation.
@@ -34,5 +37,6 @@ A key challenge was compiling complex dependencies in standard cloud builder ste
 ## 🎓 What we learned
 We learned the power of standardizing agentic communication through MCP. Wrapping database drivers behind standard tool schemas enables decoupled, maintainable integrations that fit perfectly within broader agent workflows.
 
-## 🚀 What's next
+## 🚀 What's next for SAFE-Triage
 In future iterations, we plan to support audio recording transcription for hands-free clinical input, direct integration with Electronic Health Records (EHR) schemas via MongoDB Time-Series collections, and multi-agent clinical consensus verification.
+
