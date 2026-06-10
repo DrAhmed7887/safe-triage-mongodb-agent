@@ -92,7 +92,7 @@ def post_triage(patient: PatientInput):
             "safety_disclaimer": "Disclaimer: This is a research prototype only. It is not a certified medical device and has not been cleared for clinical diagnostic use. Clinicians retain final authority over all triage assessments."
         }
         
-        # Build the case record for persistence
+        # Save case & result to MongoDB
         record = {
             "patient": patient.model_dump(),
             "triage_result": result,
@@ -111,9 +111,14 @@ def post_triage(patient: PatientInput):
                 "MongoDB MCP Server unavailable (%s) — falling back to pymongo", mcp_err
             )
             persistence_source = "pymongo_fallback"
-            record["timestamp"] = mongo_client.get_timestamp()  # pymongo accepts datetime
-            inserted_id = mongo_client.insert_case(record)
-            logger.info("Case persisted via pymongo fallback, id=%s", inserted_id)
+            try:
+                record["timestamp"] = mongo_client.get_timestamp()  # pymongo accepts datetime
+                inserted_id = mongo_client.insert_case(record)
+                logger.info("Case persisted via pymongo fallback, id=%s", inserted_id)
+            except Exception as db_exc:
+                logger.error("pymongo fallback database write failed: %s", db_exc)
+                persistence_source = "offline_mock_fallback"
+                inserted_id = "mock_case_id_offline"
 
         result["case_id"] = inserted_id
         result["persistence"] = persistence_source

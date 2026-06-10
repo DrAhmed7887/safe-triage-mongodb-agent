@@ -68,13 +68,31 @@ pip install -r requirements.txt
 
 #### 3. Run FastAPI Locally
 ```bash
-uvicorn backend.main:app --host 0.0.0.0 --port 8080 --reload
+uvicorn backend.main:app --host 127.0.0.1 --port 8080 --reload
 ```
 
-#### 4. Seed MongoDB
-Run the seeding script to load standard test scenarios into MongoDB:
+#### 4. Run Frontend Dashboard
+```bash
+python3 -m http.server 5500 -d frontend
+```
+Navigate to `http://127.0.0.1:5500` to view the UI.
+
+#### 5. Seed MongoDB
+Run the seeding script to load standard test scenarios into MongoDB Atlas:
 ```bash
 python scripts/seed_mongodb.py
+```
+
+#### 6. Run Safety Floors Unit Test Suite
+Verify that the ESI engine guarantees 0% under-triage across all 12 validation cases:
+```bash
+PYTHONPATH=. python tests/test_safety.py
+```
+
+#### 7. Generate Screenshots (Automated)
+Run the automated screenshot generator (uses Google Chrome headless) to recreate visual evaluation screens:
+```bash
+PYTHONPATH=. python scripts/generate_screenshots.py
 ```
 ---
 

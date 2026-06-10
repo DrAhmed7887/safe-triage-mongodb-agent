@@ -3,23 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAFE-Triage UI — MongoDB Track</title>
+    <title>SAFE-Triage Agent console — MongoDB Track</title>
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Arabic:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0b0f19;
-            --card-bg: #151d30;
-            --text-main: #f3f4f6;
+            --bg-dark: #070a13;
+            --card-bg: #111827;
+            --text-main: #f9fafb;
             --text-muted: #9ca3af;
             --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.5);
+            --accent-glow: rgba(59, 130, 246, 0.35);
             --border: #1f2937;
+            --border-hover: #374151;
             
-            /* ESI Colors */
-            --esi-1: #ef4444; /* Red */
-            --esi-2: #f97316; /* Orange */
-            --esi-3: #eab308; /* Yellow */
-            --esi-4: #22c55e; /* Green */
-            --esi-5: #3b82f6; /* Blue */
+            /* ESI Acuity Color Palettes */
+            --esi-1: #ef4444; /* Level 1 Red */
+            --esi-1-glow: rgba(239, 68, 68, 0.2);
+            --esi-2: #f97316; /* Level 2 Orange */
+            --esi-2-glow: rgba(249, 115, 22, 0.2);
+            --esi-3: #eab308; /* Level 3 Yellow */
+            --esi-3-glow: rgba(234, 179, 8, 0.2);
+            --esi-4: #10b981; /* Level 4 Green */
+            --esi-4-glow: rgba(16, 185, 129, 0.2);
+            --esi-5: #3b82f6; /* Level 5 Blue */
+            --esi-5-glow: rgba(59, 130, 246, 0.2);
         }
 
         * {
@@ -29,44 +39,77 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Outfit', 'Noto Sans Arabic', sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
             line-height: 1.6;
-            padding: 2rem 1rem;
+            padding: 2.5rem 1.5rem;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
         }
 
+        /* RTL support classes */
+        .rtl {
+            direction: rtl;
+            font-family: 'Noto Sans Arabic', 'Outfit', sans-serif;
+        }
+        .rtl .form-group label {
+            text-align: right;
+        }
+
+        /* Top Header Badge & Layout */
         header {
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .prototype-badge {
+            background-color: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.75rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #4f46e5 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
             margin-bottom: 0.5rem;
         }
 
         p.subtitle {
             color: var(--text-muted);
             font-size: 1.1rem;
+            max-width: 600px;
         }
 
+        /* UI Grid Split */
         .grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1.1fr 0.9fr;
             gap: 2rem;
+            align-items: start;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .grid {
                 grid-template-columns: 1fr;
             }
@@ -75,20 +118,48 @@
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 2.25rem;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
         }
 
         .card-title {
-            font-size: 1.3rem;
+            font-size: 1.35rem;
             font-weight: 700;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 0.5rem;
+            margin-bottom: 1.75rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        /* Language Toggle Switcher */
+        .lang-toggle-btn {
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.35rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lang-toggle-btn:hover {
+            border-color: var(--accent);
+            background-color: var(--accent-glow);
         }
 
         /* Form styling */
@@ -98,10 +169,12 @@
 
         label {
             display: block;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-muted);
             margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         input[type="text"],
@@ -111,11 +184,11 @@
             width: 100%;
             background-color: var(--bg-dark);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.75rem;
+            border-radius: 10px;
+            padding: 0.85rem;
             color: var(--text-main);
-            font-size: 1rem;
-            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
         }
 
         input:focus, select:focus, textarea:focus {
@@ -127,72 +200,89 @@
         .inline-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: 1.25rem;
         }
 
         .vitals-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
-            background-color: rgba(255,255,255,0.02);
-            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.25);
+            padding: 1.25rem;
             border-radius: 12px;
             border: 1px dashed var(--border);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
         }
 
-        button {
+        .vitals-grid .form-group {
+            margin-bottom: 0;
+        }
+
+        button.btn-primary {
             width: 100%;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
             color: white;
             border: none;
-            border-radius: 8px;
-            padding: 1rem;
+            border-radius: 10px;
+            padding: 1.1rem;
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.4);
-            transition: all 0.2s ease;
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+            transition: all 0.25s ease;
         }
 
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.6);
+        button.btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(59, 130, 246, 0.6);
         }
 
-        /* Demo Cases Seeder */
-        .demo-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 1.5rem;
-            padding-right: 0.5rem;
+        /* Live Canned Scenarios Bar */
+        .demo-bar {
+            background-color: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
         }
 
-        .demo-item {
+        .demo-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .demo-btn {
             background-color: var(--bg-dark);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 0.75rem;
+            padding: 0.6rem 0.85rem;
+            color: var(--text-main);
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: left;
             cursor: pointer;
-            font-size: 0.85rem;
             transition: all 0.2s ease;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .demo-item:hover {
+        .demo-btn:hover {
             border-color: var(--accent);
-            background-color: rgba(59, 130, 246, 0.05);
+            background-color: var(--accent-glow);
         }
 
+        .demo-btn .badge {
+            margin-left: 0.5rem;
+        }
+
+        /* ESI Badge indicators */
         .badge {
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-weight: 700;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 800;
             font-size: 0.75rem;
             color: white;
         }
@@ -203,7 +293,7 @@
         .badge-4 { background-color: var(--esi-4); }
         .badge-5 { background-color: var(--esi-5); }
 
-        /* Output Display */
+        /* Output Outcome Panel */
         .result-container {
             display: none;
             flex-direction: column;
@@ -212,65 +302,163 @@
 
         .esi-display {
             text-align: center;
-            padding: 2rem;
-            border-radius: 12px;
+            padding: 2.5rem;
+            border-radius: 14px;
             font-weight: 800;
-            font-size: 3rem;
+            font-size: 3.5rem;
             color: white;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.35);
             position: relative;
+            transition: all 0.3s ease;
         }
 
         .esi-title-sub {
-            font-size: 1rem;
-            font-weight: 500;
+            font-size: 1.15rem;
+            font-weight: 600;
             display: block;
-            margin-top: 0.5rem;
+            margin-top: 0.75rem;
+            opacity: 0.95;
+            letter-spacing: 0.02em;
         }
 
         .reasoning-box {
             background-color: var(--bg-dark);
             border-left: 4px solid var(--accent);
+            padding: 1.25rem;
+            border-radius: 4px 12px 12px 4px;
+        }
+
+        .warning-box {
+            background-color: rgba(239, 68, 68, 0.08);
+            border: 1px dashed rgba(239, 68, 68, 0.35);
             padding: 1rem;
-            border-radius: 0 8px 8px 0;
+            border-radius: 10px;
+            color: #fca5a5;
+            font-size: 0.88rem;
         }
 
         .disclaimer-box {
-            font-size: 0.75rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
             border-top: 1px solid var(--border);
-            padding-top: 1rem;
+            padding-top: 1.25rem;
+            margin-top: 1.25rem;
+            line-height: 1.5;
+        }
+
+        /* Persistence Details & Recent Cases */
+        .recent-cases-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .recent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
             margin-top: 1rem;
-            line-height: 1.4;
+        }
+
+        .recent-item {
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.85rem 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+        }
+
+        .recent-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .footer-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border);
+            margin-top: 2.5rem;
+            padding-top: 1.25rem;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+        .status-pill.fallback {
+            background-color: rgba(249, 115, 22, 0.15);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            color: #fb923c;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>SAFE-Triage Workspace</h1>
-            <p class="subtitle">MongoDB Atlas Integration & Triage Engine Demo Console</p>
+            <div class="prototype-badge">
+                <span>⚠️ Clinical Research Prototype — Not a Medical Device</span>
+            </div>
+            <h1>SAFE-Triage Agent Dashboard</h1>
+            <p class="subtitle">Google Cloud Agent Builder + MongoDB Atlas MCP Track Console</p>
         </header>
 
-        <div class="grid">
+        <!-- Canned Demo Scenarios Seeder -->
+        <div class="demo-bar">
+            <label style="font-size: 0.8rem; margin-bottom: 0.5rem; display: block;">Instant Triage Demo Scenarios</label>
+            <div class="demo-buttons-grid">
+                <button class="demo-btn" onclick="seedDemo(0)">
+                    <span>1. Seizure (GCS 6)</span>
+                    <span class="badge badge-1">ESI 1</span>
+                </button>
+                <button class="demo-btn" onclick="seedDemo(1)">
+                    <span>2. Chest Pain (ACS)</span>
+                    <span class="badge badge-2">ESI 2</span>
+                </button>
+                <button class="demo-btn" onclick="seedDemo(2)">
+                    <span>3. بطني بتولع فيا</span>
+                    <span class="badge badge-2">ESI 2</span>
+                </button>
+                <button class="demo-btn" onclick="seedDemo(3)">
+                    <span>4. BP Refill</span>
+                    <span class="badge badge-5">ESI 5</span>
+                </button>
+                <button class="demo-btn" onclick="triggerSeedRefresh()">
+                    <span>5. Save to MongoDB</span>
+                    <span style="color: var(--accent); font-weight: 700;">TEST 💾</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid" id="mainGrid">
             <!-- Left Side: Triage Input Form -->
             <div class="card">
                 <div class="card-title">
-                    <span>Patient Registration Form</span>
-                </div>
-                
-                <!-- Demo Loaders -->
-                <div class="form-group">
-                    <label>Select & Load Demo Scenario (MIMIC-IV & Arabic cases)</label>
-                    <div class="demo-list" id="demoList">
-                        <!-- Loaded dynamically via js -->
-                    </div>
+                    <span>Clinical Case Ingestion</span>
+                    <button class="lang-toggle-btn" onclick="toggleRTL()" id="langBtn">
+                        🌐 Toggle RTL (العربية)
+                    </button>
                 </div>
 
                 <form id="triageForm">
                     <div class="inline-group">
                         <div class="form-group">
-                            <label for="age">Age (years)</label>
+                            <label for="age">Patient Age (years)</label>
                             <input type="number" id="age" step="0.1" value="45" required>
                         </div>
                         <div class="form-group">
@@ -283,7 +471,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="complaint">Chief Complaint (English or Egyptian Arabic)</label>
+                        <label for="complaint">Chief Complaint / الشكوى الرئيسية</label>
                         <textarea id="complaint" rows="3" required placeholder="e.g. Chest pain radiating to left arm / وجع شديد في صدري"></textarea>
                     </div>
 
@@ -315,104 +503,202 @@
                         </div>
                     </div>
 
-                    <button type="submit" id="submitBtn">Perform Triage Classification</button>
+                    <button type="submit" class="btn-primary" id="submitBtn">Perform Triage Classification</button>
                 </form>
             </div>
 
             <!-- Right Side: Output Results -->
-            <div class="card">
-                <div class="card-title">Triage Officer Evaluation Outcome</div>
-                
-                <div id="noResult" style="color: var(--text-muted); text-align: center; padding: 4rem 0;">
-                    Submit a patient scenario to evaluate ESI triage outcomes.
+            <div>
+                <div class="card">
+                    <div class="card-title">Triage Officer Evaluation Outcome</div>
+                    
+                    <div id="noResult" style="color: var(--text-muted); text-align: center; padding: 4rem 0;">
+                        Submit a patient case to run the ESI hybrid clinical decision engine.
+                    </div>
+
+                    <div class="result-container" id="resultContainer">
+                        <div class="esi-display" id="esiVal">
+                            ESI 3
+                            <span class="esi-title-sub" id="esiLabel">Urgent / عاجل</span>
+                        </div>
+
+                        <div class="reasoning-box">
+                            <h4 style="margin-bottom: 0.5rem; color: var(--accent); font-size: 0.88rem; text-transform: uppercase;">Clinical Reasoning (English)</h4>
+                            <p id="reasoningEn" style="font-size: 0.95rem;"></p>
+                        </div>
+
+                        <div class="reasoning-box">
+                            <h4 style="margin-bottom: 0.5rem; color: var(--accent); font-size: 0.88rem; text-transform: uppercase;">التعليل الطبي (العربية)</h4>
+                            <p id="reasoningAr" style="font-size: 1rem; direction: rtl; text-align: right;"></p>
+                        </div>
+
+                        <div class="warning-box" id="warningBox" style="display: none;">
+                            <strong>⚠️ Safety Floor / Red Flag Warning:</strong>
+                            <p id="warningText" style="margin-top: 0.25rem;"></p>
+                        </div>
+
+                        <div>
+                            <h4 style="margin-bottom: 0.35rem; font-size: 0.88rem; text-transform: uppercase; color: var(--text-muted);">Expected Resources</h4>
+                            <p id="resourcesList" style="font-weight: 600;"></p>
+                        </div>
+
+                        <div class="disclaimer-box">
+                            <strong style="color: var(--esi-1); text-transform: uppercase; font-size: 0.78rem;">Clinician Authority Override Disclaimer:</strong>
+                            <p id="disclaimerText" style="margin-top: 0.25rem;"></p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="result-container" id="resultContainer">
-                    <div class="esi-display" id="esiVal">
-                        ESI 3
-                        <span class="esi-title-sub" id="esiLabel">Urgent / عاجل</span>
-                    </div>
-
-                    <div class="reasoning-box">
-                        <h4 style="margin-bottom: 0.5rem; color: var(--accent);">Clinical Reasoning (English)</h4>
-                        <p id="reasoningEn"></p>
-                    </div>
-
-                    <div class="reasoning-box">
-                        <h4 style="margin-bottom: 0.5rem; color: var(--accent);">التعليل الطبي (العربية)</h4>
-                        <p id="reasoningAr" style="direction: rtl; text-align: right;"></p>
-                    </div>
-
-                    <div>
-                        <h4 style="margin-bottom: 0.5rem;">Expected Resources Recommended</h4>
-                        <p id="resourcesList" style="color: var(--text-muted);"></p>
-                    </div>
-
-                    <div class="disclaimer-box">
-                        <strong style="color: var(--esi-1);">CLINICAL WARNING & AUTHORIZATION AUTHORITY:</strong>
-                        <p id="disclaimerText"></p>
+                <!-- Recent Cases (Proves Live Database Writes) -->
+                <div class="recent-cases-card">
+                    <h4 style="font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between;">
+                        <span>Recent Triage History Logs</span>
+                        <span style="color: var(--accent); cursor: pointer;" onclick="fetchRecentCases()">🔄 Refresh</span>
+                    </h4>
+                    <div class="recent-list" id="recentList">
+                        <div style="color: var(--text-muted); font-size: 0.82rem; text-align: center; padding: 1rem;">No cases logged in this session yet.</div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Connection and Status Footnote -->
+        <div class="footer-status">
+            <span>Server Health Protocol: REST API Endpoint Active</span>
+            <div style="display: flex; gap: 0.75rem;">
+                <span id="mcpPill" class="status-pill fallback">MCP: Offline (pymongo)</span>
+                <span id="dbPill" class="status-pill fallback">pymongo: Disconnected</span>
             </div>
         </div>
     </div>
 
     <script>
-        // Seed Cases List (Demo Data)
-        const demoCases = [
+        // Formulated demo scenarios corresponding to hackathon specs
+        const demoScenarios = [
             {
-                "chief_complaint": "Not responding at all and breathing very weak",
-                "chief_complaint_ar": "مش بيرد عليا خالص والنفس ضعيف جداً",
-                "age": 55, "gender": "male", "expected_level": 1,
-                "vitals": { "hr": 40, "rr": 6, "spo2": 82, "temp": 36.2, "sbp": 70, "gcs": 3 }
+                "chief_complaint": "Having seizures and we can't stop them",
+                "age": 28, "gender": "female",
+                "vitals": { "hr": 130, "rr": 24, "spo2": 95, "temp": 37.1, "sbp": 120, "gcs": 6 }
             },
             {
-                "chief_complaint": "Severe chest pain for 30 min radiating to left arm",
-                "chief_complaint_ar": "صدري بيوجعني جامد من نص ساعة وبينتشر في دراعي الشمال",
-                "age": 58, "gender": "male", "expected_level": 2,
+                "chief_complaint": "Severe chest pain radiating to left arm",
+                "age": 58, "gender": "male",
                 "vitals": { "hr": 100, "rr": 22, "spo2": 94, "temp": 36.8, "sbp": 160, "gcs": 15 }
             },
             {
-                "chief_complaint": "Abdominal pain since yesterday, right lower side",
-                "chief_complaint_ar": "بطني بتوجعني من امبارح في الجنب الأيمن تحت",
-                "age": 25, "gender": "female", "expected_level": 3,
-                "vitals": { "hr": 95, "rr": 18, "spo2": 98, "temp": 38.2, "sbp": 115, "gcs": 15 }
+                "chief_complaint": "مغص شديد وبطني بتولع فيا من الصبح",
+                "age": 34, "gender": "female",
+                "vitals": { "hr": 98, "rr": 18, "spo2": 98, "temp": 37.2, "sbp": 110, "gcs": 15 }
             },
             {
-                "chief_complaint": "My stomach is burning inside of me",
-                "chief_complaint_ar": "بطني بتولع فيا",
-                "age": 34, "gender": "female", "expected_level": 2,
-                "vitals": { "hr": 98, "rr": 18, "spo2": 98, "temp": 37.2, "sbp": 110, "gcs": 15 }
+                "chief_complaint": "Need to refill my blood pressure prescription",
+                "age": 60, "gender": "male",
+                "vitals": { "hr": 72, "rr": 14, "spo2": 99, "temp": 36.5, "sbp": 135, "gcs": 15 }
             }
         ];
 
-        // Populate Demo List
-        const demoList = document.getElementById('demoList');
-        demoCases.forEach((c, idx) => {
-            const el = document.createElement('div');
-            el.className = 'demo-item';
-            el.innerHTML = `
-                <div>
-                    <strong>${c.chief_complaint}</strong><br>
-                    <span style="color: var(--text-muted); font-size: 0.75rem;">${c.chief_complaint_ar}</span>
-                </div>
-                <span class="badge badge-${c.expected_level}">ESI ${c.expected_level}</span>
-            `;
-            el.onclick = () => loadDemo(c);
-            demoList.appendChild(el);
-        });
-
-        function loadDemo(c) {
-            document.getElementById('age').value = c.age;
-            document.getElementById('gender').value = c.gender;
-            document.getElementById('complaint').value = c.chief_complaint;
+        function seedDemo(idx) {
+            const sc = demoScenarios[idx];
+            document.getElementById('age').value = sc.age;
+            document.getElementById('gender').value = sc.gender;
+            document.getElementById('complaint').value = sc.chief_complaint;
             
-            document.getElementById('hr').value = c.vitals.hr || '';
-            document.getElementById('rr').value = c.vitals.rr || '';
-            document.getElementById('spo2').value = c.vitals.spo2 || '';
-            document.getElementById('temp').value = c.vitals.temp || '';
-            document.getElementById('sbp').value = c.vitals.sbp || '';
-            document.getElementById('gcs').value = c.vitals.gcs || '';
+            document.getElementById('hr').value = sc.vitals.hr;
+            document.getElementById('rr').value = sc.vitals.rr;
+            document.getElementById('spo2').value = sc.vitals.spo2;
+            document.getElementById('temp').value = sc.vitals.temp;
+            document.getElementById('sbp').value = sc.vitals.sbp;
+            document.getElementById('gcs').value = sc.vitals.gcs;
+
+            // Automatically toggle RTL if complaint contains Arabic characters
+            const hasArabic = /[\u0600-\u06FF]/.test(sc.chief_complaint);
+            setRTL(hasArabic);
+        }
+
+        function setRTL(isRtl) {
+            const mainGrid = document.getElementById('mainGrid');
+            const langBtn = document.getElementById('langBtn');
+            if (isRtl) {
+                mainGrid.classList.add('rtl');
+                langBtn.textContent = "🌐 Toggle LTR (English)";
+            } else {
+                mainGrid.classList.remove('rtl');
+                langBtn.textContent = "🌐 Toggle RTL (العربية)";
+            }
+        }
+
+        function toggleRTL() {
+            const mainGrid = document.getElementById('mainGrid');
+            const isRtl = mainGrid.classList.contains('rtl');
+            setRTL(!isRtl);
+        }
+
+        // Trigger seed manual submit
+        async function triggerSeedRefresh() {
+            seedDemo(1); // Load chest pain
+            document.getElementById('triageForm').dispatchEvent(new Event('submit'));
+        }
+
+        // Fetch connectivity status
+        async function updateStatusPills() {
+            try {
+                const res = await fetch('/health');
+                const data = await res.json();
+                
+                const mcpPill = document.getElementById('mcpPill');
+                const dbPill = document.getElementById('dbPill');
+                
+                if (data.mongodb_mcp_server && data.mongodb_mcp_server.status === "connected") {
+                    mcpPill.className = "status-pill";
+                    mcpPill.textContent = `MCP: Connected (documents: ${data.mongodb_mcp_server.count})`;
+                } else {
+                    mcpPill.className = "status-pill fallback";
+                    mcpPill.textContent = "MCP: Offline (pymongo fallback)";
+                }
+
+                if (data.mongodb_pymongo === "connected") {
+                    dbPill.className = "status-pill";
+                    dbPill.textContent = "pymongo: Connected";
+                } else {
+                    dbPill.className = "status-pill fallback";
+                    dbPill.textContent = "pymongo: Disconnected";
+                }
+            } catch(e) {
+                console.error("Health check failed", e);
+            }
+        }
+
+        // Fetch recent cases from database
+        async function fetchRecentCases() {
+            try {
+                const res = await fetch('/cases?limit=5');
+                const data = await res.json();
+                const list = document.getElementById('recentList');
+                list.innerHTML = '';
+
+                if (!data.cases || data.cases.length === 0) {
+                    list.innerHTML = '<div style="color: var(--text-muted); font-size: 0.82rem; text-align: center; padding: 1rem;">No cases logged in database.</div>';
+                    return;
+                }
+
+                data.cases.forEach(c => {
+                    const el = document.createElement('div');
+                    el.className = 'recent-item';
+                    const ESI = c.triage_result.esi_level || c.triage_result.level;
+                    const complaint = c.patient.chief_complaint_text;
+                    const persistence = c.persistence === "mongodb_mcp_server" ? "💾 MCP" : "📴 PyMongo";
+                    el.innerHTML = `
+                        <div class="recent-item-info">
+                            <strong>${complaint.length > 35 ? complaint.substring(0, 35) + '...' : complaint}</strong>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">Age ${c.patient.age} | ${c.patient.gender} | ${persistence}</span>
+                        </div>
+                        <span class="badge badge-${ESI}">ESI ${ESI}</span>
+                    `;
+                    list.appendChild(el);
+                });
+            } catch (err) {
+                console.error("Failed to load recent cases", err);
+            }
         }
 
         // Form Submit
@@ -437,7 +723,6 @@
             };
 
             try {
-                // Post request to triage API
                 const res = await fetch('/triage', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -455,16 +740,30 @@
                 // ESI Level Coloring
                 const esiVal = document.getElementById('esiVal');
                 esiVal.style.backgroundColor = `var(--esi-${data.esi_level})`;
+                esiVal.style.boxShadow = `0 10px 30px ${getGlowColor(data.esi_level)}`;
                 esiVal.innerHTML = `ESI ${data.esi_level} <span class="esi-title-sub" id="esiLabel">${data.label_en} / ${data.label_ar}</span>`;
                 
                 document.getElementById('reasoningEn').textContent = data.reasoning_en;
                 document.getElementById('reasoningAr').textContent = data.reasoning_ar;
                 
+                // Handle safety warnings
+                const warningBox = document.getElementById('warningBox');
+                if (data.safety_warning) {
+                    warningBox.style.display = 'block';
+                    document.getElementById('warningText').textContent = data.safety_warning;
+                } else {
+                    warningBox.style.display = 'none';
+                }
+
                 const resources = data.expected_resources && data.expected_resources.length > 0 
                     ? data.expected_resources.join(', ') 
                     : 'No resource tracking indicated for this ESI bracket.';
                 document.getElementById('resourcesList').textContent = resources;
-                document.getElementById('disclaimerText').textContent = data.disclaimer;
+                document.getElementById('disclaimerText').textContent = data.safety_disclaimer || data.disclaimer;
+                
+                // Refresh list and health pills
+                await fetchRecentCases();
+                await updateStatusPills();
             } catch (err) {
                 alert('Triage Classification Error: ' + err.message);
             } finally {
@@ -472,6 +771,39 @@
                 submitBtn.disabled = false;
             }
         };
+
+        function getGlowColor(level) {
+            return {
+                1: 'var(--esi-1-glow)',
+                2: 'var(--esi-2-glow)',
+                3: 'var(--esi-3-glow)',
+                4: 'var(--esi-4-glow)',
+                5: 'var(--esi-5-glow)'
+            }[level] || 'rgba(0,0,0,0)';
+        }
+
+        // Init loads
+        updateStatusPills();
+        fetchRecentCases();
+        // Poll status every 10 seconds
+        setInterval(updateStatusPills, 10000);
+
+        // Auto-seed/submit via URL parameters for screenshot generation
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const demoIdx = params.get('demo');
+            if (demoIdx !== null) {
+                const idx = parseInt(demoIdx, 10);
+                if (idx >= 0 && idx < demoScenarios.length) {
+                    seedDemo(idx);
+                    if (params.get('submit') === 'true') {
+                        setTimeout(() => {
+                            document.getElementById('triageForm').dispatchEvent(new Event('submit'));
+                        }, 500);
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>
