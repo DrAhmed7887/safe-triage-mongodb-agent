@@ -53,6 +53,41 @@ except ImportError:
     )
 
 
+# ── MCP payload parsing ───────────────────────────────────────────────────────
+
+
+def _loads_or_extract(text: str) -> Any:
+    """json.loads `text`, or extract+parse an embedded JSON array/object from a
+    summary-prefixed string (e.g. 'Query ... resulted in N documents [{...}]')."""
+    try:
+        return json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        pass
+    for open_ch, close_ch in (("[", "]"), ("{", "}")):
+        start, end = text.find(open_ch), text.rfind(close_ch)
+        if start != -1 and end > start:
+            try:
+                return json.loads(text[start : end + 1])
+            except json.JSONDecodeError:
+                continue
+    return None
+
+
+def _parse_mcp_payload(texts: list[str]) -> Any:
+    """Turn MCP text content blocks into structured data. Handles servers that
+    prepend a human-readable summary block before the JSON (find), return one
+    document per block, or return a single JSON envelope (insert-many/count)."""
+    parsed = [v for t in texts if t for v in (_loads_or_extract(t),) if v is not None]
+    if not parsed:
+        return "\n".join(t for t in texts if t)  # e.g. a plain count summary
+    for v in parsed:
+        if isinstance(v, list):
+            return v  # a documents array (find)
+    if len(parsed) == 1:
+        return parsed[0]  # single envelope (insert-many / count / one doc)
+    return parsed  # multiple JSON objects -> list of documents
+
+
 # ── async helper ──────────────────────────────────────────────────────────────
 
 
@@ -68,13 +103,15 @@ async def _call_mcp_tool(
             async with ClientSession(read, write) as session:
                 await session.initialize()
                 result = await session.call_tool(tool_name, arguments=tool_args)
-                # result.content is a list of TextContent / ImageContent blocks
+                # result.content is a list of TextContent / ImageContent blocks.
+                # Some MongoDB MCP server versions prepend a human-readable summary
+                # line (e.g. 'Query ... resulted in N documents') before the JSON,
+                # or return one document per block — handle every shape.
                 if result.content:
-                    text = result.content[0].text if hasattr(result.content[0], "text") else str(result.content[0])
-                    try:
-                        result_val = json.loads(text)
-                    except (json.JSONDecodeError, TypeError):
-                        result_val = text
+                    texts = [
+                        getattr(b, "text", None) or str(b) for b in result.content
+                    ]
+                    result_val = _parse_mcp_payload(texts)
     except Exception as exc:
         is_harmless = False
         if isinstance(exc, BaseExceptionGroup):
