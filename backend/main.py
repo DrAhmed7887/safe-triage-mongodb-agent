@@ -8,6 +8,7 @@ from backend.models import PatientInput, TriageResult, TriageLevel
 from agent.triage_tool import TriageTool
 from backend.mongodb_client import MongoDBClient
 from backend.mimic_loader import load_demo_cases
+from agent.mongodb_mcp_client import MongoDBMCPClient, MongoDBMCPError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -18,9 +19,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Initialize Tooling and Connection
+# Initialize Tooling and Connections
 triage_tool = TriageTool()
 mongo_client = MongoDBClient()
+mcp_client = MongoDBMCPClient()  # MongoDB MCP Server client (primary persistence)
 
 @app.on_event("startup")
 async def startup_event():
@@ -35,11 +37,13 @@ async def startup_event():
 
 @app.get("/health", tags=["System"])
 def health_check():
-    """Returns the system health status, including MongoDB connection state."""
+    """Returns the system health status, including MongoDB MCP and pymongo states."""
     db_status = "connected" if mongo_client.is_connected() else "disconnected"
+    mcp_health = mcp_client.health()
     return {
         "status": "healthy",
-        "mongodb": db_status,
+        "mongodb_mcp_server": mcp_health,
+        "mongodb_pymongo": db_status,
         "gcp_project_id": os.getenv("GCP_PROJECT_ID", "not-configured")
     }
 
@@ -88,15 +92,32 @@ def post_triage(patient: PatientInput):
             "safety_disclaimer": "Disclaimer: This is a research prototype only. It is not a certified medical device and has not been cleared for clinical diagnostic use. Clinicians retain final authority over all triage assessments."
         }
         
-        # Save case & result to MongoDB
+        # Build the case record for persistence
         record = {
             "patient": patient.model_dump(),
             "triage_result": result,
-            "timestamp": mongo_client.get_timestamp()
+            "timestamp": mongo_client.get_timestamp().isoformat()
         }
-        inserted_id = mongo_client.insert_case(record)
+
+        # Persist via MongoDB MCP Server (primary); fall back to pymongo
+        persistence_source = "mongodb_mcp_server"
+        try:
+            inserted_id = mcp_client.save_case(record)
+            if not inserted_id:
+                raise MongoDBMCPError("MCP server returned empty insertedId")
+            logger.info("Case persisted via MongoDB MCP Server, id=%s", inserted_id)
+        except MongoDBMCPError as mcp_err:
+            logger.warning(
+                "MongoDB MCP Server unavailable (%s) — falling back to pymongo", mcp_err
+            )
+            persistence_source = "pymongo_fallback"
+            record["timestamp"] = mongo_client.get_timestamp()  # pymongo accepts datetime
+            inserted_id = mongo_client.insert_case(record)
+            logger.info("Case persisted via pymongo fallback, id=%s", inserted_id)
+
         result["case_id"] = inserted_id
-        
+        result["persistence"] = persistence_source
+
         return result
     except Exception as e:
         logger.error(f"Triage processing failed: {e}")
@@ -112,8 +133,19 @@ def get_cases(limit: int = 20, esi: Optional[int] = None):
     Optionally queries/filters by ESI level using MongoDB queries.
     """
     try:
-        records = mongo_client.get_cases(limit=limit, esi=esi)
-        return {"count": len(records), "cases": records}
+        # Retrieve via MongoDB MCP Server (primary); fall back to pymongo
+        persistence_source = "mongodb_mcp_server"
+        try:
+            records = mcp_client.get_cases(limit=limit, esi=esi)
+            logger.info("Cases retrieved via MongoDB MCP Server (count=%d)", len(records))
+        except MongoDBMCPError as mcp_err:
+            logger.warning(
+                "MongoDB MCP Server unavailable (%s) — falling back to pymongo", mcp_err
+            )
+            persistence_source = "pymongo_fallback"
+            records = mongo_client.get_cases(limit=limit, esi=esi)
+
+        return {"count": len(records), "cases": records, "persistence": persistence_source}
     except Exception as e:
         logger.error(f"Failed to fetch cases: {e}")
         raise HTTPException(

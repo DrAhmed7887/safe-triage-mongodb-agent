@@ -22,6 +22,36 @@ This codebase houses a hybrid clinical decision support system (CDSS) for emerge
 
 ---
 
+### MongoDB MCP Server Integration
+
+The agent persists and retrieves all triage cases through the **MongoDB MCP Server**
+(`github.com/mongodb-js/mongodb-mcp-server`), satisfying the Rapid Agent Hackathon
+partner-MCP requirement for the MongoDB track.
+
+**MCP tools called (confirmed against live Atlas cluster):**
+
+| Tool | Operation |
+|---|---|
+| `insert-many` | Persist a new triage case record to `safe_triage.triage_cases` |
+| `find` | Retrieve recent cases (sorted by timestamp desc) or filtered by ESI level |
+| `count` | Health probe — confirms the MCP server and cluster are reachable |
+
+**How it works:**
+
+1. `agent/mongodb_mcp_client.py` launches `npx -y mongodb-mcp-server --connectionString <URI>` as a child process via the official Python MCP SDK (`mcp>=1.0.0`, stdio transport).
+2. A singleton background asyncio loop is shared across calls so the Node process is not re-spawned on every request.
+3. On every `POST /triage` and `GET /cases`, the agent calls the MCP server first. If the MCP server is unavailable (Node not installed, handshake error, no connection string), it logs a warning and falls back transparently to **pymongo**.
+4. Every response includes a `"persistence"` field (`"mongodb_mcp_server"` or `"pymongo_fallback"`) so the integration path is demonstrable to judges.
+
+**Environment variable:**
+
+```
+MDB_MCP_CONNECTION_STRING=  # Atlas URI for the MCP server process
+                             # (auto-falls-back to MONGODB_URI if unset)
+```
+
+---
+
 ### Getting Started
 
 #### 1. Setup Environment
